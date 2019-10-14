@@ -38,9 +38,15 @@ assign mul_result    = {64{mul_op[0]}} & signed_prod
                      | {64{mul_op[1]}} & unsigned_prod;
 endmodule
 
-//to fit 5 pipeline states
-//ignore all div_in_valid until div_out_valid
-//keep div_out_valid until div_out_ready(es_allowin&&...to avoid X)
+
+//To fit 5 pipeline states
+//only accept next in_valid during or after last out_valid && out_ready
+//keep out_valid until shaking hands with div_out_ready(es_allowin)
+
+//To be a more general module with no limitation on input
+//actively ignore all in_valid until div_out_valid && out_ready
+//i.e. with compatibility on random in_valids during this period
+//and doesn't treat them as mew inputs
 module divider(
     input         clk,
     input         rst,
@@ -54,39 +60,54 @@ module divider(
     output        div_out_valid,
     input         div_out_ready
 );
+reg  div_in_valid_r ;
+wire div_in_valid_w ;
+reg  div_busy_r;
+wire div_busy_w;
+reg  div_out_valid_r;
+wire div_out_valid_w;
 
-reg  div_in_valid_r       ;
-reg  div_busy             ;
-reg  div_out_valid_r      ;
-wire div_out_valid_forward;
+wire [31:0] s_axis_divisor_tdata       ;
+wire        s_axis_divisor_tready      ;
+wire        s_axis_divisor_tvalid_sgn  ;
+wire        s_axis_divisor_tvalid_usgn ;
+wire [31:0] s_axis_dividend_tdata      ;
+wire        s_axis_dividend_tready     ;
+wire        s_axis_dividend_tvalid_sgn ;
+wire        s_axis_dividend_tvalid_usgn;
+wire [63:0] m_axis_dout_tdata          ;
+wire        m_axis_dout_tvalid_sgn     ;
+wire        m_axis_dout_tvalid_usgn    ;
 
-wire [31:0] s_axis_divisor_tdata  ;
-wire        s_axis_divisor_tready ;
-wire        s_axis_divisor_tvalid ;
-wire [31:0] s_axis_dividend_tdata ;
-wire        s_axis_dividend_tready;
-wire        s_axis_dividend_tvalid;
-wire [63:0] m_axis_dout_tdata     ;
-wire        m_axis_dout_tvalid    ;
 
+//all three priorities are strictly needed
 always @(posedge clk)
-    if(div_in_valid && !div_busy)
-        div_in_valid_r <= 1'h1;
-    else if(s_axis_divisor_tready && s_axis_dividend_tready)
+    if(rst)
         div_in_valid_r <= 1'h0;
+    else if(div_op[0] && s_axis_divisor_tready && s_axis_dividend_tready
+          | div_op[1] && s_axis_divisor_tready && s_axis_dividend_tready)
+        div_in_valid_r <= 1'h0;
+    else if(div_in_valid && !div_busy_w)
+        div_in_valid_r <= 1'h1;
+assign  div_in_valid_w  = div_in_valid_r || div_in_valid && !div_busy_w;
 
 always @(posedge clk)
     if(rst)
-        div_busy <= 1'h0;
-    else if(div_out_ready)
-        div_busy <= 1'h0;
+        div_busy_r <= 1'h0;
     else if(div_in_valid)
-        div_busy <= 1'h1;
+        div_busy_r <= 1'h1;
+    else if(div_out_valid_w && div_out_ready)
+        div_busy_r <= 1'h0;
+assign  div_busy_w  = div_busy_r && !(div_out_valid_w && div_out_ready);
 
 always @(posedge clk)
-    if(m_axis_dout_tvalid)
-        
-
+    if(rst)
+        div_out_valid_r <= 1'h0;
+    else if(div_out_ready)
+        div_out_valid_r <= 1'h0;
+    else if(m_axis_dout_tvalid)
+        div_out_valid_r <= 1'h1;
+assign  div_out_valid_w  = div_out_valid || div_out_valid_r;
 
 XXXXX u_divider(
     .aclk                  (clk),
