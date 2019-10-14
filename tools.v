@@ -32,8 +32,8 @@ module multiplier(
 );
 wire [63:0] signed_prod;
 wire [63:0] unsigned_prod;
-assign signed_prod   = $signed(src1) * $signed(src2);
-assign unsigned_prod = src1 * src2;
+assign signed_prod   = $signed(mul_src1) * $signed(mul_src2);
+assign unsigned_prod = mul_src1 * mul_src2;
 assign mul_result    = {64{mul_op[0]}} & signed_prod
                      | {64{mul_op[1]}} & unsigned_prod;
 endmodule
@@ -68,14 +68,17 @@ reg  div_out_valid_r;
 wire div_out_valid_w;
 
 wire [31:0] s_axis_divisor_tdata       ;
-wire        s_axis_divisor_tready      ;
 wire        s_axis_divisor_tvalid_sgn  ;
 wire        s_axis_divisor_tvalid_usgn ;
+wire        s_axis_divisor_tready_sgn  ;
+wire        s_axis_divisor_tready_usgn ;
 wire [31:0] s_axis_dividend_tdata      ;
-wire        s_axis_dividend_tready     ;
 wire        s_axis_dividend_tvalid_sgn ;
 wire        s_axis_dividend_tvalid_usgn;
-wire [63:0] m_axis_dout_tdata          ;
+wire        s_axis_dividend_tready_sgn ;
+wire        s_axis_dividend_tready_usgn;
+wire [63:0] m_axis_dout_tdata_sgn      ;
+wire [63:0] m_axis_dout_tdata_usgn     ;
 wire        m_axis_dout_tvalid_sgn     ;
 wire        m_axis_dout_tvalid_usgn    ;
 
@@ -84,8 +87,8 @@ wire        m_axis_dout_tvalid_usgn    ;
 always @(posedge clk)
     if(rst)
         div_in_valid_r <= 1'h0;
-    else if(div_op[0] && s_axis_divisor_tready && s_axis_dividend_tready
-          | div_op[1] && s_axis_divisor_tready && s_axis_dividend_tready)
+    else if(div_op[0] && s_axis_divisor_tready_sgn  && s_axis_dividend_tready_sgn
+         || div_op[1] && s_axis_divisor_tready_usgn && s_axis_dividend_tready_usgn)
         div_in_valid_r <= 1'h0;
     else if(div_in_valid && !div_busy_w)
         div_in_valid_r <= 1'h1;
@@ -105,7 +108,8 @@ always @(posedge clk)
         div_out_valid_r <= 1'h0;
     else if(div_out_ready)
         div_out_valid_r <= 1'h0;
-    else if(m_axis_dout_tvalid)
+    else if(div_op[0] && m_axis_dout_tvalid_sgn
+         || div_op[1] && m_axis_dout_tvalid_usgn)
         div_out_valid_r <= 1'h1;
 assign  div_out_valid_w  = div_out_valid || div_out_valid_r;
 
