@@ -25,11 +25,13 @@ wire        ms_ready_go;
 reg [`ES_TO_MS_BUS_WD -1:0] es_to_ms_bus_r;
 wire        ms_res_from_mem;
 wire        ms_gr_we;
+wire        ms_hl_we;
 wire [ 4:0] ms_dest;
 wire [31:0] ms_alu_result;
 wire [31:0] ms_pc;
-assign {ms_res_from_mem,  //70:70
-        ms_gr_we       ,  //69:69
+assign {ms_res_from_mem,  //71:71
+        ms_gr_we       ,  //70:70
+        ms_hl_we       ,  //69:69
         ms_dest        ,  //68:64
         ms_alu_result  ,  //63:32
         ms_pc             //31:0
@@ -38,7 +40,8 @@ assign {ms_res_from_mem,  //70:70
 wire [31:0] mem_result;
 wire [31:0] ms_final_result;
 
-assign ms_to_ws_bus = {ms_gr_we       ,  //69:69
+assign ms_to_ws_bus = {ms_gr_we       ,  //70:70
+                       ms_hl_we       ,  //69:69
                        ms_dest        ,  //68:64
                        ms_final_result,  //63:32
                        ms_pc             //31:0
