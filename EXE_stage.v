@@ -15,8 +15,6 @@ module exe_stage(
     //es to id stall
     output [`STALL_BUS_WD    -1:0] stall_es_bus  ,
     output [`FORWARD_BUS_WD  -1:0] forward_es_bus,
-    //hi, lo regs
-    output [`HI_LO_BUS_WD    -1:0] hi_lo_es_bus  ,
     // data sram interface
     output        data_sram_en   ,
     output [ 3:0] data_sram_wen  ,
@@ -28,34 +26,42 @@ reg         es_valid      ;
 wire        es_ready_go   ;
 
 reg  [`DS_TO_ES_BUS_WD -1:0] ds_to_es_bus_r;
+wire        es_hl_from_rs ;
 wire [11:0] es_alu_op     ;
 wire [ 1:0] es_mul_op     ;
 wire [ 1:0] es_div_op     ;
 wire        es_load_op    ;
 wire        es_src1_is_sa ;  
 wire        es_src1_is_pc ;
+wire        es_src1_is_hi ;
+wire        es_src1_is_lo ;
 wire        es_src2_is_imm;
 wire        es_src2_is_uimm; 
 wire        es_src2_is_8  ;
 wire        es_gr_we      ;
-wire        es_hl_we      ;
+wire        es_hi_we      ;
+wire        es_lo_we      ;
 wire        es_mem_we     ;
 wire [ 4:0] es_dest       ;
 wire [15:0] es_imm        ;
 wire [31:0] es_rs_value   ;
 wire [31:0] es_rt_value   ;
 wire [31:0] es_pc         ;
-assign {es_alu_op      ,  //141:130
-        es_mul_op      ,  //129:128
-        es_div_op      ,  //127:126
-        es_load_op     ,  //125:125
-        es_src1_is_sa  ,  //124:124
-        es_src1_is_pc  ,  //123:123
-        es_src2_is_imm ,  //122:122
-        es_src2_is_uimm,  //121:121
-        es_src2_is_8   ,  //120:120
-        es_gr_we       ,  //119:119
-        es_hl_we       ,  //118:118
+assign {es_hl_from_rs  ,  //145:145
+        es_alu_op      ,  //144:133
+        es_mul_op      ,  //132:131
+        es_div_op      ,  //130:129
+        es_load_op     ,  //128:128
+        es_src1_is_sa  ,  //127:127
+        es_src1_is_pc  ,  //126:126
+        es_src1_is_hi  ,  //125:125
+        es_src1_is_lo  ,  //124:124
+        es_src2_is_imm ,  //123:123
+        es_src2_is_uimm,  //122:122
+        es_src2_is_8   ,  //121:121
+        es_gr_we       ,  //120:120
+        es_hi_we       ,  //119:119
+        es_lo_we       ,  //118:118
         es_mem_we      ,  //117:117
         es_dest        ,  //116:112
         es_imm         ,  //111:96
@@ -68,6 +74,8 @@ wire [31:0] es_alu_src1   ;
 wire [31:0] es_alu_src2   ;
 wire [31:0] es_alu_result ;
 wire [63:0] es_mul_result ;
+wire [63:0] es_div_result ;
+wire [63:0] es_hl_result  ;
 
 wire        es_res_from_mem;
 wire        es_res_from_mul;
@@ -77,9 +85,8 @@ assign es_res_from_mem = es_load_op;
 assign es_res_from_mul = es_mul_op[0] | es_mul_op[1];
 assign es_res_from_div = es_div_op[0] | es_div_op[1];
 
-assign es_to_ms_bus = {es_res_from_mem,  //71:71
-                       es_gr_we       ,  //70:70
-                       es_hl_we       ,  //69:69
+assign es_to_ms_bus = {es_res_from_mem,  //70:70
+                       es_gr_we       ,  //69:69
                        es_dest        ,  //68:64
                        es_alu_result  ,  //63:32
                        es_pc             //31:0
@@ -105,8 +112,29 @@ always @(posedge clk) begin
     end
 end
 
+reg [31:0] hi;
+reg [31:0] lo;
+
+wire [31:0] hi_wdata;
+wire [31:0] lo_wdata;
+
+assign hi_wdata = es_hl_from_rs ? es_rs_value :
+                  /* mult/div */  es_hl_result[63:32];
+assign lo_wdata = es_hl_from_rs ? es_rs_value :
+                  /* mult/div */  es_hl_result[31:0];
+
+always @(posedge clk) begin
+    if (es_hi_we)
+        hi <= hi_wdata;
+    
+    if (es_lo_we)
+        lo <= lo_wdata;
+end
+
 assign es_alu_src1 = es_src1_is_sa  ? {27'b0, es_imm[10:6]} : 
                      es_src1_is_pc  ? es_pc[31:0] :
+                     es_src1_is_hi  ? hi :
+                     es_src1_is_lo  ? lo :
                                       es_rs_value;
 assign es_alu_src2 = es_src2_is_imm ? {{16{es_imm[15]}}, es_imm[15:0]} :
                      es_src2_is_uimm? { 16'h0          , es_imm[15:0]} :

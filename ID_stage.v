@@ -16,7 +16,6 @@ module id_stage(
     output [`BR_BUS_WD       -1:0] br_bus        ,
     //to rf: for write back
     input  [`WS_TO_RF_BUS_WD -1:0] ws_to_rf_bus  ,
-    input  [`HI_LO_BUS_WD    -1:0] hi_lo_ds_bus  ,
     //to judge if stall
     input  [`STALL_BUS_WD*3  -1:0] stall_ds_bus  ,
     input  [`FORWARD_BUS_WD*3-1:0] forward_ds_bus
@@ -85,19 +84,22 @@ wire        br_taken;
 wire [31:0] br_target;
 
 
-
+wire        hl_from_rs;
 wire [11:0] alu_op;
 wire [ 1:0] mul_op;
 wire [ 1:0] div_op;
 wire        load_op;
 wire        src1_is_sa;
 wire        src1_is_pc;
+wire        src1_is_hi;
+wire        src1_is_lo;
 wire        src2_is_imm;
 wire        src2_is_uimm;
 wire        src2_is_8;
 wire        res_from_mem;
 wire        gr_we;
-wire        hl_we;
+wire        ds_hi_we;   // move to es; not affecting hi_we
+wire        ds_lo_we;
 wire        mem_we;
 wire [ 4:0] dest;
 wire [15:0] imm;
@@ -150,6 +152,11 @@ wire        inst_bne;
 wire        inst_jal;
 wire        inst_jr;
 
+wire        inst_mfhi;
+wire        inst_mflo;
+wire        inst_mthi;
+wire        inst_mtlo;
+
 wire        dst_is_r31;  
 wire        dst_is_rt;   
 
@@ -162,17 +169,21 @@ wire        rs_eq_rt;
 
 assign br_bus       = {br_taken,br_target};
 
-assign ds_to_es_bus = {alu_op      ,  //141:130
-                       mul_op      ,  //129:128
-                       div_op      ,  //127:126
-                       load_op     ,  //125:125
-                       src1_is_sa  ,  //124:124
-                       src1_is_pc  ,  //123:123
-                       src2_is_imm ,  //122:122
-                       src2_is_uimm,  //121:121
-                       src2_is_8   ,  //120:120
-                       gr_we       ,  //119:119
-                       hl_we       ,  //118:118
+assign ds_to_es_bus = {hl_from_rs  ,  //145:145
+                       alu_op      ,  //144:133
+                       mul_op      ,  //132:131
+                       div_op      ,  //130:129
+                       load_op     ,  //128:128
+                       src1_is_sa  ,  //127:127
+                       src1_is_pc  ,  //126:126
+                       src1_is_hi  ,  //125:125
+                       src1_is_lo  ,  //124:124
+                       src2_is_imm ,  //123:123
+                       src2_is_uimm,  //122:122
+                       src2_is_8   ,  //121:121
+                       gr_we       ,  //120:120
+                       ds_hi_we       ,  //119:119
+                       ds_lo_we       ,  //118:118
                        mem_we      ,  //117:117
                        dest        ,  //116:112
                        imm         ,  //111:96
@@ -244,6 +255,11 @@ assign inst_bne    = op_d[6'h05];
 assign inst_jal    = op_d[6'h03];
 assign inst_jr     = op_d[6'h00] & func_d[6'h08] & rt_d[5'h00] & rd_d[5'h00] & sa_d[5'h00];
 
+assign inst_mfhi   = op_d[6'h00] & func_d[6'h10] & rs_d[5'h00] & rt_d[5'h00] & sa_d[5'h00];
+assign inst_mflo   = op_d[6'h00] & func_d[6'h12] & rs_d[5'h00] & rt_d[5'h00] & sa_d[5'h00];
+assign inst_mthi   = op_d[6'h00] & func_d[6'h11] & rt_d[5'h00] & rd_d[5'h00] & sa_d[5'h00];
+assign inst_mtlo   = op_d[6'h00] & func_d[6'h13] & rt_d[5'h00] & rd_d[5'h00] & sa_d[5'h00];
+
 assign alu_op[ 0] = inst_add | inst_addi | inst_addu | inst_addiu
                   | inst_lw  | inst_sw   | inst_jal;
 assign alu_op[ 1] = inst_sub | inst_subu;
@@ -251,7 +267,8 @@ assign alu_op[ 2] = inst_slt | inst_slti;
 assign alu_op[ 3] = inst_sltu | inst_sltiu;
 assign alu_op[ 4] = inst_and | inst_andi;
 assign alu_op[ 5] = inst_nor;
-assign alu_op[ 6] = inst_or | inst_ori;
+assign alu_op[ 6] = inst_or  | inst_ori
+                  | inst_mfhi| inst_mflo;
 assign alu_op[ 7] = inst_xor | inst_xori;
 assign alu_op[ 8] = inst_sll | inst_sllv;
 assign alu_op[ 9] = inst_srl | inst_srlv;
@@ -263,6 +280,8 @@ assign load_op    = inst_lw;
 
 assign src1_is_sa   = inst_sll   | inst_srl   | inst_sra;
 assign src1_is_pc   = inst_jal;
+assign src1_is_hi   = inst_mfhi;
+assign src1_is_lo   = inst_mflo;
 assign src2_is_imm  = inst_addi  | inst_addiu | inst_slti  | inst_sltiu
                     | inst_lui   | inst_lw    | inst_sw;
 assign src2_is_uimm = inst_andi  | inst_ori   | inst_xori;
@@ -271,8 +290,10 @@ assign res_from_mem = inst_lw;
 assign dst_is_r31   = inst_jal;
 assign dst_is_rt    = inst_addi  | inst_addiu | inst_slti  | inst_sltiu
                     | inst_andi  | inst_ori   | inst_xori  | inst_lui   | inst_lw;
-assign gr_we        = ~inst_sw & ~inst_beq & ~inst_bne & ~inst_jr;
-assign hl_we        = inst_mult;
+assign gr_we        = ~inst_sw & ~inst_beq & ~inst_bne & ~inst_jr & ~inst_mthi & ~inst_mtlo;
+assign ds_hi_we     = inst_mult  | inst_mthi;
+assign ds_lo_we     = inst_mult  | inst_mtlo;
+assign hl_from_rs   = inst_mthi  | inst_mtlo;
 assign mem_we       = inst_sw;
 
 assign dest         = dst_is_r31 ? 5'd31 :
