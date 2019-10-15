@@ -113,19 +113,43 @@ always @(posedge clk)
         div_out_valid_r <= 1'h1;
 assign  div_out_valid_w  = div_out_valid || div_out_valid_r;
 
-XXXXX u_divider(
-    .aclk                  (clk),
+assign s_axis_divisor_tvalid_sgn   = div_in_valid && div_op[0];
+assign s_axis_dividend_tvalid_sgn  = s_axis_divisor_tvalid_sgn
+assign s_axis_divisor_tvalid_usgn  = div_in_valid && div_op[1];
+assign s_axis_dividend_tvalid_usgn = s_axis_divisor_tvalid_usgn
 
-    .s_axis_divisor_tdata  (),
-    .s_axis_divisor_tready (),
-    .s_axis_divisor_tvalid (),
+mydiv_sgn u_mydiv_sgn(
+    .aclk                  (clk                       ),
 
-    .s_axis_dividend_tdata (),
-    .s_axis_dividend_tready(),
-    .s_axis_dividend_tvalid(),
+    .s_axis_divisor_tdata  (s_axis_divisor_tdata      ),
+    .s_axis_divisor_tready (s_axis_divisor_tvalid_sgn ),
+    .s_axis_divisor_tvalid (s_axis_divisor_tready_sgn ),
 
-    .m_axis_dout_tdata     (),
-    .m_axis_dout_tvalid    ()
+    .s_axis_dividend_tdata (s_axis_dividend_tdata     ),
+    .s_axis_dividend_tready(s_axis_dividend_tvalid_sgn),
+    .s_axis_dividend_tvalid(s_axis_dividend_tready_sgn),
+
+    .m_axis_dout_tdata     (m_axis_dout_tdata_sgn     ),
+    .m_axis_dout_tvalid    (m_axis_dout_tvalid_sgn    )
 );
 
+mydiv_usgn u_mydiv_usgn(
+    .aclk                  (clk                        ),
+
+    .s_axis_divisor_tdata  (s_axis_divisor_tdata       ),
+    .s_axis_divisor_tready (s_axis_divisor_tvalid_usgn ),
+    .s_axis_divisor_tvalid (s_axis_divisor_tready_usgn ),
+
+    .s_axis_dividend_tdata (s_axis_dividend_tdata      ),
+    .s_axis_dividend_tready(s_axis_dividend_tvalid_usgn),
+    .s_axis_dividend_tvalid(s_axis_dividend_tready_usgn),
+
+    .m_axis_dout_tdata     (m_axis_dout_tdata_usgn     ),
+    .m_axis_dout_tvalid    (m_axis_dout_tvalid_usgn    )
+);
+
+assign div_result = {64{div_op[0]}} & m_axis_dout_tdata_sgn
+                  | {64{div_op[1]}} & m_axis_dout_tdata_usgn;
+
+endmodule
 
