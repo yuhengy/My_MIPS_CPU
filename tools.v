@@ -106,16 +106,18 @@ assign  div_busy_w  = div_busy_r && !(div_out_valid_w && div_out_ready);
 always @(posedge clk)
     if(rst)
         div_out_valid_r <= 1'h0;
-    else if(div_out_ready)
+    else if(div_out_ready || div_in_valid && !div_busy_w))
         div_out_valid_r <= 1'h0;
     else if(div_op[0] && m_axis_dout_tvalid_sgn
          || div_op[1] && m_axis_dout_tvalid_usgn)
         div_out_valid_r <= 1'h1;
-assign  div_out_valid_w  = div_out_valid || div_out_valid_r;
+assign  div_out_valid_w  = (div_op[0] && m_axis_dout_tvalid_sgn
+                         || div_op[1] && m_axis_dout_tvalid_usgn) || div_out_valid_r;
+assign  div_out_valid    = div_out_valid_w;
 
-assign s_axis_divisor_tvalid_sgn   = div_in_valid && div_op[0];
+assign s_axis_divisor_tvalid_sgn   = div_in_valid_w && div_op[0];
 assign s_axis_dividend_tvalid_sgn  = s_axis_divisor_tvalid_sgn;
-assign s_axis_divisor_tvalid_usgn  = div_in_valid && div_op[1];
+assign s_axis_divisor_tvalid_usgn  = div_in_valid_w && div_op[1];
 assign s_axis_dividend_tvalid_usgn = s_axis_divisor_tvalid_usgn;
 
 mydiv_sgn u_mydiv_sgn(
