@@ -84,7 +84,7 @@ id_stage id_stage(
                       forward_ms_bus ,
                       forward_ws_bus}),
     //to rf: for write back
-    .ws_to_rf_bus   (ws_to_rf_bus   ),
+    .ws_to_rf_bus   (ws_to_rf_bus   )
 );
 // EXE stage
 exe_stage exe_stage(
