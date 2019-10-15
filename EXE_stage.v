@@ -87,7 +87,7 @@ reg [31:0] hi;
 reg [31:0] lo;
 
 wire        hi_we;
-wire        hi_lo;
+wire        lo_we;
 wire [31:0] hi_wdata;
 wire [31:0] lo_wdata;
 
