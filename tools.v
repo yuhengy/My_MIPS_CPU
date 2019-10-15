@@ -114,9 +114,9 @@ always @(posedge clk)
 assign  div_out_valid_w  = div_out_valid || div_out_valid_r;
 
 assign s_axis_divisor_tvalid_sgn   = div_in_valid && div_op[0];
-assign s_axis_dividend_tvalid_sgn  = s_axis_divisor_tvalid_sgn
+assign s_axis_dividend_tvalid_sgn  = s_axis_divisor_tvalid_sgn;
 assign s_axis_divisor_tvalid_usgn  = div_in_valid && div_op[1];
-assign s_axis_dividend_tvalid_usgn = s_axis_divisor_tvalid_usgn
+assign s_axis_dividend_tvalid_usgn = s_axis_divisor_tvalid_usgn;
 
 mydiv_sgn u_mydiv_sgn(
     .aclk                  (clk                       ),
