@@ -107,7 +107,7 @@ assign stall_es_bus = {es_valid && es_gr_we,
 assign forward_es_bus = {es_valid && !es_res_from_mem,
                          es_alu_result};
 
-assign es_ready_go    = 1'b1;
+assign es_ready_go    = !(es_res_from_div && !es_div_out_valid);
 assign es_allowin     = !es_valid || es_ready_go && ms_allowin;
 assign es_to_ms_valid =  es_valid && es_ready_go;
 always @(posedge clk) begin
