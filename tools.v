@@ -153,3 +153,43 @@ assign div_result = {64{div_op[0]}} & {m_axis_dout_tdata_sgn[31:0], m_axis_dout_
 
 endmodule
 
+module br_comp(
+    input  [ 5:0] br_op,
+    input  [31:0] br_src1,
+    input  [31:0] br_src2,
+
+    output        br_happen
+);
+
+endmodule
+
+module ld_decode(
+
+);
+
+module st_decode(
+
+);
+
+module ld_select(
+    input  [ 3:0] ld_rshift_op, //get in ID
+    input  [ 4:0] ld_extd_op,
+    input  [31:0] data_sram_rdata,
+
+    output [31:0] mem_result
+);
+
+endmodule
+
+module st_select(
+    input  [ 3:0] st_rshift_op,
+    input  [31:0] data_from_reg,
+
+    output [31:0] data_sram_wdata
+);
+
+endmodule
+
+
+
+
