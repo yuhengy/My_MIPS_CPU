@@ -106,7 +106,7 @@ assign  div_busy_w  = div_busy_r && !(div_out_valid_w && div_out_ready);
 always @(posedge clk)
     if(rst)
         div_out_valid_r <= 1'h0;
-    else if(div_out_ready || div_in_valid && !div_busy_w))
+    else if(div_out_ready || div_in_valid && !div_busy_w)
         div_out_valid_r <= 1'h0;
     else if(div_op[0] && m_axis_dout_tvalid_sgn
          || div_op[1] && m_axis_dout_tvalid_usgn)
