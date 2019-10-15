@@ -67,12 +67,10 @@ wire div_busy_w;
 reg  div_out_valid_r;
 wire div_out_valid_w;
 
-wire [31:0] s_axis_divisor_tdata       ;
 wire        s_axis_divisor_tvalid_sgn  ;
 wire        s_axis_divisor_tvalid_usgn ;
 wire        s_axis_divisor_tready_sgn  ;
 wire        s_axis_divisor_tready_usgn ;
-wire [31:0] s_axis_dividend_tdata      ;
 wire        s_axis_dividend_tvalid_sgn ;
 wire        s_axis_dividend_tvalid_usgn;
 wire        s_axis_dividend_tready_sgn ;
