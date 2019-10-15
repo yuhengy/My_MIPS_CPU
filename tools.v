@@ -123,11 +123,11 @@ assign s_axis_dividend_tvalid_usgn = s_axis_divisor_tvalid_usgn;
 mydiv_sgn u_mydiv_sgn(
     .aclk                  (clk                       ),
 
-    .s_axis_divisor_tdata  (s_axis_divisor_tdata      ),
+    .s_axis_divisor_tdata  (divisor                   ),
     .s_axis_divisor_tready (s_axis_divisor_tready_sgn ),
     .s_axis_divisor_tvalid (s_axis_divisor_tvalid_sgn ),
 
-    .s_axis_dividend_tdata (s_axis_dividend_tdata     ),
+    .s_axis_dividend_tdata (dividend                  ),
     .s_axis_dividend_tready(s_axis_dividend_tready_sgn),
     .s_axis_dividend_tvalid(s_axis_dividend_tvalid_sgn),
 
@@ -138,11 +138,11 @@ mydiv_sgn u_mydiv_sgn(
 mydiv_usgn u_mydiv_usgn(
     .aclk                  (clk                        ),
 
-    .s_axis_divisor_tdata  (s_axis_divisor_tdata       ),
+    .s_axis_divisor_tdata  (divisor                    ),
     .s_axis_divisor_tready (s_axis_divisor_tready_usgn ),
     .s_axis_divisor_tvalid (s_axis_divisor_tvalid_usgn ),
 
-    .s_axis_dividend_tdata (s_axis_dividend_tdata      ),
+    .s_axis_dividend_tdata (dividend                   ),
     .s_axis_dividend_tready(s_axis_dividend_tready_usgn),
     .s_axis_dividend_tvalid(s_axis_dividend_tvalid_usgn),
 
