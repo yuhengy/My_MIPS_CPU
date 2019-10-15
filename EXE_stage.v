@@ -77,9 +77,18 @@ wire [63:0] es_mul_result ;
 wire [63:0] es_div_result ;
 wire [63:0] es_hl_result  ;
 
+wire        es_hl_res_valid;
 wire        es_res_from_mem;
 wire        es_res_from_mul;
 wire        es_res_from_div;
+
+reg [31:0] hi;
+reg [31:0] lo;
+
+wire        hi_we;
+wire        hi_lo;
+wire [31:0] hi_wdata;
+wire [31:0] lo_wdata;
 
 assign es_res_from_mem = es_load_op;
 assign es_res_from_mul = es_mul_op[0] | es_mul_op[1];
@@ -112,25 +121,6 @@ always @(posedge clk) begin
     end
 end
 
-reg [31:0] hi;
-reg [31:0] lo;
-
-wire [31:0] hi_wdata;
-wire [31:0] lo_wdata;
-
-assign hi_wdata = es_hl_from_rs ? es_rs_value :
-                  /* mult/div */  es_hl_result[63:32];
-assign lo_wdata = es_hl_from_rs ? es_rs_value :
-                  /* mult/div */  es_hl_result[31:0];
-
-always @(posedge clk) begin
-    if (es_hi_we)
-        hi <= hi_wdata;
-    
-    if (es_lo_we)
-        lo <= lo_wdata;
-end
-
 assign es_alu_src1 = es_src1_is_sa  ? {27'b0, es_imm[10:6]} : 
                      es_src1_is_pc  ? es_pc[31:0] :
                      es_src1_is_hi  ? hi :
@@ -161,9 +151,25 @@ divider u_divider(
 
 );
 
+assign es_hl_result = es_res_from_div ? es_div_result :
+                      /* mul */         es_mul_result;
 
+assign es_hl_res_valid = es_hl_from_rs || es_res_from_mul || (es_res_from_div && es_dout_valid);
+assign hi_we    = es_valid && es_hi_we && es_hl_res_valid;
+assign lo_we    = es_valid && es_lo_we && es_hl_res_valid;
 
+assign hi_wdata = es_hl_from_rs ? es_rs_value :
+                  /* mult/div */  es_hl_result[63:32];
+assign lo_wdata = es_hl_from_rs ? es_rs_value :
+                  /* mult/div */  es_hl_result[31:0];
 
+always @(posedge clk) begin
+    if (hi_we)
+        hi <= hi_wdata;
+    
+    if (lo_we)
+        lo <= lo_wdata;
+end
 
 
 

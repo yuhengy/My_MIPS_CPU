@@ -126,6 +126,9 @@ wire        inst_addu;
 wire        inst_sub;
 wire        inst_subu;
 wire        inst_mult;
+wire        inst_multu;
+wire        inst_div;
+wire        inst_divu;
 wire        inst_slt;
 wire        inst_slti;
 wire        inst_sltu;
@@ -229,6 +232,9 @@ assign inst_addu   = op_d[6'h00] & func_d[6'h21] & sa_d[5'h00];
 assign inst_sub    = op_d[6'h00] & func_d[6'h22] & sa_d[5'h00];
 assign inst_subu   = op_d[6'h00] & func_d[6'h23] & sa_d[5'h00];
 assign inst_mult   = op_d[6'h00] & func_d[6'h18] & sa_d[5'h00] & rd_d[5'h00];
+assign inst_multu  = op_d[6'h00] & func_d[6'h19] & sa_d[5'h00] & rd_d[5'h00];
+assign inst_div    = op_d[6'h00] & func_d[6'h1a] & sa_d[5'h00] & rd_d[5'h00];
+assign inst_divu   = op_d[6'h00] & func_d[6'h1b] & sa_d[5'h00] & rd_d[5'h00];
 assign inst_slt    = op_d[6'h00] & func_d[6'h2a] & sa_d[5'h00];
 assign inst_slti   = op_d[6'h0a];
 assign inst_sltu   = op_d[6'h00] & func_d[6'h2b] & sa_d[5'h00];
@@ -275,6 +281,9 @@ assign alu_op[ 9] = inst_srl | inst_srlv;
 assign alu_op[10] = inst_sra | inst_srav;
 assign alu_op[11] = inst_lui;
 assign mul_op[ 0] = inst_mult;
+assign mul_op[ 1] = inst_multu;
+assign div_op[ 0] = inst_div;
+assign div_op[ 1] = inst_divu;
 
 assign load_op    = inst_lw;
 
@@ -291,8 +300,8 @@ assign dst_is_r31   = inst_jal;
 assign dst_is_rt    = inst_addi  | inst_addiu | inst_slti  | inst_sltiu
                     | inst_andi  | inst_ori   | inst_xori  | inst_lui   | inst_lw;
 assign gr_we        = ~inst_sw & ~inst_beq & ~inst_bne & ~inst_jr & ~inst_mthi & ~inst_mtlo;
-assign ds_hi_we     = inst_mult  | inst_mthi;
-assign ds_lo_we     = inst_mult  | inst_mtlo;
+assign ds_hi_we     = inst_mult  | inst_multu | inst_div   | inst_divu  | inst_mthi;
+assign ds_lo_we     = inst_mult  | inst_multu | inst_div   | inst_divu  | inst_mtlo;
 assign hl_from_rs   = inst_mthi  | inst_mtlo;
 assign mem_we       = inst_sw;
 
