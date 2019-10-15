@@ -148,8 +148,8 @@ mydiv_usgn u_mydiv_usgn(
     .m_axis_dout_tvalid    (m_axis_dout_tvalid_usgn    )
 );
 
-assign div_result = {64{div_op[0]}} & m_axis_dout_tdata_sgn
-                  | {64{div_op[1]}} & m_axis_dout_tdata_usgn;
+assign div_result = {64{div_op[0]}} & {m_axis_dout_tdata_sgn[31:0], m_axis_dout_tdata_sgn[63:32]}
+                  | {64{div_op[1]}} & {m_axis_dout_tdata_usgn[31:0], m_axis_dout_tdata_usgn[63:32]};
 
 endmodule
 
