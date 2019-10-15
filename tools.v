@@ -124,12 +124,12 @@ mydiv_sgn u_mydiv_sgn(
     .aclk                  (clk                       ),
 
     .s_axis_divisor_tdata  (s_axis_divisor_tdata      ),
-    .s_axis_divisor_tready (s_axis_divisor_tvalid_sgn ),
-    .s_axis_divisor_tvalid (s_axis_divisor_tready_sgn ),
+    .s_axis_divisor_tready (s_axis_divisor_tready_sgn ),
+    .s_axis_divisor_tvalid (s_axis_divisor_tvalid_sgn ),
 
     .s_axis_dividend_tdata (s_axis_dividend_tdata     ),
-    .s_axis_dividend_tready(s_axis_dividend_tvalid_sgn),
-    .s_axis_dividend_tvalid(s_axis_dividend_tready_sgn),
+    .s_axis_dividend_tready(s_axis_dividend_tready_sgn),
+    .s_axis_dividend_tvalid(s_axis_dividend_tvalid_sgn),
 
     .m_axis_dout_tdata     (m_axis_dout_tdata_sgn     ),
     .m_axis_dout_tvalid    (m_axis_dout_tvalid_sgn    )
@@ -139,12 +139,12 @@ mydiv_usgn u_mydiv_usgn(
     .aclk                  (clk                        ),
 
     .s_axis_divisor_tdata  (s_axis_divisor_tdata       ),
-    .s_axis_divisor_tready (s_axis_divisor_tvalid_usgn ),
-    .s_axis_divisor_tvalid (s_axis_divisor_tready_usgn ),
+    .s_axis_divisor_tready (s_axis_divisor_tready_usgn ),
+    .s_axis_divisor_tvalid (s_axis_divisor_tvalid_usgn ),
 
     .s_axis_dividend_tdata (s_axis_dividend_tdata      ),
-    .s_axis_dividend_tready(s_axis_dividend_tvalid_usgn),
-    .s_axis_dividend_tvalid(s_axis_dividend_tready_usgn),
+    .s_axis_dividend_tready(s_axis_dividend_tready_usgn),
+    .s_axis_dividend_tvalid(s_axis_dividend_tvalid_usgn),
 
     .m_axis_dout_tdata     (m_axis_dout_tdata_usgn     ),
     .m_axis_dout_tvalid    (m_axis_dout_tvalid_usgn    )
