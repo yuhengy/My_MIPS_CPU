@@ -1,3 +1,17 @@
-Author: HughYangyh
-Author: ChanningYoung
+Author: Yang Yuheng
+Author: Yang Chengyuan
+
+The listing of this directory:
+|-myCPU/
+|	|--mycpu.h			Macro definitions for bus widths
+|	|--mycpu_top.v		Top module of CPU
+|	|--IF_stage.v		Instruction fetch stage module
+|	|--ID_stage.v		Instruction decoding stage module
+|	|--EXE_stage.v		Execution stage module
+|	|--MEM_stage.v		Memory access stage module
+|	|--WB_stage.v		Write-back stage module
+|	|--regfile.v		General register file module
+|	|--alu.v			ALU module
+|	|--tools.v			Decoder modules; Multipier & Divider
+|	|--README			This README file
 
