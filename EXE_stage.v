@@ -77,6 +77,7 @@ wire [63:0] es_mul_result ;
 wire [63:0] es_div_result ;
 wire [63:0] es_hl_result  ;
 
+wire        es_div_out_valid;
 wire        es_hl_res_valid;
 wire        es_res_from_mem;
 wire        es_res_from_mul;
@@ -146,15 +147,21 @@ multiplier u_multiplier(
 );
 
 divider u_divider(
-    .aclk()
-    .
-
+    .clk            (clk                ),
+    .rst            (reset              ),
+    .div_op         (es_div_op          ),
+    .divisor        (es_rt_value        ),
+    .dividend       (es_rs_value        ),
+    .div_in_valid   (es_res_from_div    ),
+    .div_result     (es_div_result      ),
+    .div_out_valid  (es_div_out_valid   ),
+    .div_out_ready  (1                  )
 );
 
 assign es_hl_result = es_res_from_div ? es_div_result :
                       /* mul */         es_mul_result;
 
-assign es_hl_res_valid = es_hl_from_rs || es_res_from_mul || (es_res_from_div && es_dout_valid);
+assign es_hl_res_valid = es_hl_from_rs || es_res_from_mul || (es_res_from_div && es_div_out_valid);
 assign hi_we    = es_valid && es_hi_we && es_hl_res_valid;
 assign lo_we    = es_valid && es_lo_we && es_hl_res_valid;
 
@@ -170,8 +177,6 @@ always @(posedge clk) begin
     if (lo_we)
         lo <= lo_wdata;
 end
-
-
 
 assign data_sram_en    = 1'b1;
 assign data_sram_wen   = es_mem_we&&es_valid ? 4'hf : 4'h0;
