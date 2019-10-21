@@ -331,12 +331,16 @@ endmodule
 
 
 module ld_select(
-    input  [ 3:0] ld_rshift_op, //get in ID
+    input  [ 3:0] ld_rshift_op,
     input  [ 4:0] ld_extd_op,
     input  [31:0] data_sram_rdata,
 
     output [31:0] mem_result
 );
+wire [31:0] mem_result_unextd;
+assign mem_result_unextd = {32{ld_rshift_op[0]}} & {data_sram_rdata}
+                         | {32{ld_rshift_op[1]}} & {data_sram_rdata[7:0], data_sram_rdata[31:8]}
+                         | {32{ld_rshift_op[2]}} 
 
 endmodule
 
@@ -349,6 +353,23 @@ module st_select(
 
 endmodule
 
+module forward_merge(
+    input  [ 3:0] forward,
+    input  [11:0] forward_en,
+    input  [95:0] forward_data,
+    input  [31:0] rf_rdata,
+
+    output [31:0] merge_value
+);
+wire        forward_no,      forward_es,      forward_ms,      forward_ws;
+wire [ 3:0]               forward_en_es,   forward_en_ms,   forward_en_ws;
+wire [31:0]             forward_data_es, forward_data_ms, forward_data_ws;
+assign {  forward_en_es,   forward_en_ms,   forward_en_ws} = forward_en;
+assign {forward_data_es, forward_data_ms, forward_data_ws} = forward_data;
+
+assign merge_value[ 7: 0] = forward_no & rf_rdata[ 7: 0]
+                          | forward_ws & 
 
 
+endmodule
 
