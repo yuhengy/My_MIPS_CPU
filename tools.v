@@ -161,7 +161,39 @@ module br_comp(
     output        br_happen
 );
 
+wire op_beq;
+wire op_bne;
+wire op_bgez;
+wire op_bgtz;
+wire op_blez;
+wire op_bltz;
+
+wire src1_eq_src2;
+wire src1_gez;
+wire src1_ltz;
+wire src1_zero;
+
+assign op_beq   = br_op[0];
+assign op_bne   = br_op[1];
+assign op_bgez  = br_op[2];
+assign op_bgtz  = br_op[3];
+assign op_blez  = br_op[4];
+assign op_bltz  = br_op[5];
+
+assign src1_eq_src2 = (br_src1 == br_src2);
+assign src1_gez     = ~br_src1[31];
+assign src1_ltz     = br_src1[31];
+assign src1_zero    = (br_src1 == 32'b0);
+
+assign br_happen =  op_beq  &&  src1_eq_src2
+                ||  op_bne  && !src1_eq_src2
+                ||  op_bgez &&  src1_gez
+                ||  op_bgtz && (src1_gez && !src1_zero)
+                ||  op_blez && (src1_ltz ||  src1_zero)
+                ||  op_bltz &&  src1_ltz;
+
 endmodule
+
 
 module ld_decode(
 

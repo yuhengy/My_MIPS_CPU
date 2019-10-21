@@ -82,7 +82,8 @@ assign {es_forward_valid ,es_forward_data,
 
 wire        br_taken;
 wire [31:0] br_target;
-
+wire        br_happen;  // br_taken component for Branch (excluding Jump)
+wire [ 5:0] br_op;
 
 wire        hl_from_rs;
 wire [11:0] alu_op;
@@ -152,6 +153,10 @@ wire        inst_lw;
 wire        inst_sw;
 wire        inst_beq;
 wire        inst_bne;
+wire        inst_bgez;
+wire        inst_bgtz;
+wire        inst_blez;
+wire        inst_bltz;
 wire        inst_jal;
 wire        inst_jr;
 
@@ -167,8 +172,6 @@ wire [ 4:0] rf_raddr1;
 wire [31:0] rf_rdata1;
 wire [ 4:0] rf_raddr2;
 wire [31:0] rf_rdata2;
-
-wire        rs_eq_rt;
 
 assign br_bus       = {br_taken,br_target};
 
@@ -258,6 +261,10 @@ assign inst_lw     = op_d[6'h23];
 assign inst_sw     = op_d[6'h2b];
 assign inst_beq    = op_d[6'h04];
 assign inst_bne    = op_d[6'h05];
+assign inst_bgez   = op_d[6'h01] & rt_d[5'h01];
+assign inst_bgtz   = op_d[6'h07] & rt_d[5'h00];
+assign inst_blez   = op_d[6'h06] & rt_d[5'h00];
+assign inst_bltz   = op_d[6'h01] & rt_d[5'h00];
 assign inst_jal    = op_d[6'h03];
 assign inst_jr     = op_d[6'h00] & func_d[6'h08] & rt_d[5'h00] & rd_d[5'h00] & sa_d[5'h00];
 
@@ -285,6 +292,13 @@ assign mul_op[ 1] = inst_multu;
 assign div_op[ 0] = inst_div;
 assign div_op[ 1] = inst_divu;
 
+assign br_op[  0] = inst_beq;
+assign br_op[  1] = inst_bne;
+assign br_op[  2] = inst_bgez;
+assign br_op[  3] = inst_bgtz;
+assign br_op[  4] = inst_blez;
+assign br_op[  5] = inst_bltz;
+
 assign load_op    = inst_lw;
 
 assign src1_is_sa   = inst_sll   | inst_srl   | inst_sra;
@@ -299,7 +313,8 @@ assign res_from_mem = inst_lw;
 assign dst_is_r31   = inst_jal;
 assign dst_is_rt    = inst_addi  | inst_addiu | inst_slti  | inst_sltiu
                     | inst_andi  | inst_ori   | inst_xori  | inst_lui   | inst_lw;
-assign gr_we        = ~inst_sw & ~inst_beq & ~inst_bne & ~inst_jr & ~inst_mthi & ~inst_mtlo;
+assign gr_we        = ~inst_beq & ~inst_bne & ~inst_bgez & ~inst_bgtz & ~inst_blez & ~inst_bltz
+                    & ~inst_sw  & ~inst_jr  & ~inst_mthi & ~inst_mtlo;
 assign ds_hi_we     = inst_mult  | inst_multu | inst_div   | inst_divu  | inst_mthi;
 assign ds_lo_we     = inst_mult  | inst_multu | inst_div   | inst_divu  | inst_mtlo;
 assign hl_from_rs   = inst_mthi  | inst_mtlo;
@@ -355,13 +370,19 @@ assign forward_happen = !stall_reg1_happen && forward_reg2_happen
                      || !stall_reg2_happen && forward_reg1_happen
                      || forward_reg1_happen && forward_reg2_happen;
 
-assign rs_eq_rt = (rs_value == rt_value);
-assign br_taken = (   inst_beq  &&  rs_eq_rt
-                   || inst_bne  && !rs_eq_rt
+br_comp u_br_comp(
+    .br_op      (br_op      ),
+    .br_src1    (rs_value   ),
+    .br_src2    (rt_value   ),
+    
+    .br_happen  (br_happen  )
+);
+
+assign br_taken = (   br_happen
                    || inst_jal
                    || inst_jr
                   ) && ds_valid;
-assign br_target = (inst_beq || inst_bne) ? (fs_pc + {{14{imm[15]}}, imm[15:0], 2'b0}) :
+assign br_target = (|br_op ) ? (fs_pc + {{14{imm[15]}}, imm[15:0], 2'b0}) :
                    (inst_jr)              ? rs_value :
                   /*inst_jal*/              {fs_pc[31:28], jidx[25:0], 2'b0};
 
