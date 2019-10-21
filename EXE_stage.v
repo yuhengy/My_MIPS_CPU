@@ -102,15 +102,16 @@ assign es_res_from_mem = es_load_op;
 assign es_res_from_mul = es_mul_op[0] | es_mul_op[1];
 assign es_res_from_div = es_div_op[0] | es_div_op[1];
 
-assign es_to_ms_bus = {es_res_from_mem,  //81:81
-                       es_inst_load   ,  //80:74
-                       es_ld_extd_op  ,  //73:69
+assign es_to_ms_bus = {es_res_from_mem,  //82:82
+                       es_inst_load   ,  //81:75
+                       es_ld_extd_op  ,  //74:70
+                       es_gr_we       ,  //69:69
                        es_dest        ,  //68:64
                        es_alu_result  ,  //63:32
                        es_pc             //31:0
                       };
 
-assign stall_es_bus = {es_valid && es_gr_we,
+assign stall_es_bus = {{4{es_valid && es_gr_we}},
                        es_dest};
 assign forward_es_bus = {es_valid && !es_res_from_mem,
                          es_alu_result};

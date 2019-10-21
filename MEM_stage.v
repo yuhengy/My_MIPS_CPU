@@ -27,13 +27,15 @@ wire        ms_res_from_mem;
 wire [ 6:0] ms_inst_load   ;
 wire [ 3:0] ms_ld_rshift_op;
 wire [ 4:0] ms_ld_extd_op  ;
+wire        ms_gr_we_1     ;
 wire [ 3:0] ms_gr_we       ;
 wire [ 4:0] ms_dest        ;
 wire [31:0] ms_alu_result  ;
 wire [31:0] ms_pc          ;
-assign {ms_res_from_mem,  //81:81
-        ms_inst_load   ,  //80:74
-        ms_ld_extd_op  ,  //73:69
+assign {ms_res_from_mem,  //82:82
+        ms_inst_load   ,  //81:75
+        ms_ld_extd_op  ,  //74:70
+        ms_gr_we_1     ,  //69:69
         ms_dest        ,  //68:64
         ms_alu_result  ,  //63:32
         ms_pc             //31:0
@@ -48,7 +50,7 @@ assign ms_to_ws_bus = {ms_gr_we       ,  //72:69
                        ms_pc             //31:0
                       };
 
-assign stall_ms_bus = {ms_valid && ms_gr_we,
+assign stall_ms_bus = {{4{ms_valid}} & ms_gr_we,
                        ms_dest};
 assign forward_ms_bus = {ms_valid,
                          ms_final_result};
@@ -69,6 +71,7 @@ always @(posedge clk) begin
 end
 
 ld_decode u_ld_decode(
+ms_gr_we_1
 ms_inst_load
 ms_gr_we
 ms_ld_rshift_op

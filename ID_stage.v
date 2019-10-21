@@ -43,11 +43,11 @@ assign {rf_we   ,  //37:37
 
 wire        reg1_stall_valid;
 wire        reg2_stall_valid;
-wire        es_we;
+wire [ 3:0] es_we;
 wire [ 4:0] es_dest;
-wire        ms_we;
+wire [ 3:0] ms_we;
 wire [ 4:0] ms_dest;
-wire        ws_we;
+wire [ 3:0] ws_we;
 wire [ 4:0] ws_dest;
 wire        es_forward_valid;
 wire [31:0] es_forward_data;
@@ -388,12 +388,12 @@ assign rt_value = forward_reg2_es? es_forward_data:
 
 assign reg1_stall_valid = rf_raddr1!=5'h0 && !src1_is_sa  && !src1_is_pc;
 assign reg2_stall_valid = rf_raddr2!=5'h0 && (!src2_is_imm || store_op) && !src2_is_8 ;
-assign stall_reg1_es = reg1_stall_valid && es_we && rf_raddr1==es_dest;
-assign stall_reg1_ms = reg1_stall_valid && ms_we && rf_raddr1==ms_dest;
-assign stall_reg1_ws = reg1_stall_valid && ws_we && rf_raddr1==ws_dest;
-assign stall_reg2_es = reg2_stall_valid && es_we && rf_raddr2==es_dest;
-assign stall_reg2_ms = reg2_stall_valid && ms_we && rf_raddr2==ms_dest;
-assign stall_reg2_ws = reg2_stall_valid && ws_we && rf_raddr2==ws_dest;
+assign stall_reg1_es = reg1_stall_valid && (|es_we) && rf_raddr1==es_dest;
+assign stall_reg1_ms = reg1_stall_valid && (|ms_we) && rf_raddr1==ms_dest;
+assign stall_reg1_ws = reg1_stall_valid && (|ws_we) && rf_raddr1==ws_dest;
+assign stall_reg2_es = reg2_stall_valid && (|es_we) && rf_raddr2==es_dest;
+assign stall_reg2_ms = reg2_stall_valid && (|ms_we) && rf_raddr2==ms_dest;
+assign stall_reg2_ws = reg2_stall_valid && (|ws_we) && rf_raddr2==ws_dest;
 assign stall_reg1_happen = stall_reg1_es || stall_reg1_ms || stall_reg1_ws;
 assign stall_reg2_happen = stall_reg2_es || stall_reg2_ms || stall_reg2_ws;
 assign stall_happen = stall_reg1_happen || stall_reg2_happen;
