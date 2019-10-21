@@ -24,10 +24,11 @@ wire        ms_ready_go;
 
 reg [`ES_TO_MS_BUS_WD -1:0] es_to_ms_bus_r;
 wire        ms_res_from_mem;
-wire        ms_gr_we;
-wire [ 4:0] ms_dest;
-wire [31:0] ms_alu_result;
-wire [31:0] ms_pc;
+wire [ 6:0] ms_inst_load   ;
+wire        ms_gr_we       ;
+wire [ 4:0] ms_dest        ;
+wire [31:0] ms_alu_result  ;
+wire [31:0] ms_pc          ;
 assign {ms_res_from_mem,  //70:70
         ms_gr_we       ,  //69:69
         ms_dest        ,  //68:64

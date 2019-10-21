@@ -90,6 +90,7 @@ wire [11:0] alu_op;
 wire [ 1:0] mul_op;
 wire [ 1:0] div_op;
 wire        load_op;
+wire [ 4:0] ld_extd_op;
 wire        src1_is_sa;
 wire        src1_is_pc;
 wire        src1_is_hi;
@@ -101,7 +102,7 @@ wire        res_from_mem;
 wire        gr_we;
 wire        ds_hi_we;   // move to es; not affecting hi_we
 wire        ds_lo_we;
-wire        mem_we;
+wire [ 3:0] mem_we;
 wire [ 4:0] dest;
 wire [15:0] imm;
 wire [31:0] rs_value;
@@ -149,12 +150,22 @@ wire        inst_sra;
 wire        inst_srav;
 wire        inst_addiu;
 wire        inst_lui;
+
+wire  [6:0] inst_load;
 wire        inst_lw;
 wire        inst_lb;
 wire        inst_lbu;
 wire        inst_lh;
 wire        inst_lhu;
+wire        inst_lwl;
+wire        inst_lwr;
+wire  [4:0] inst_store;
 wire        inst_sw;
+wire        inst_sb;
+wire        inst_sh;
+wire        inst_swl;
+wire        inst_swr;
+
 wire        inst_beq;
 wire        inst_bne;
 wire        inst_bgez;
@@ -184,22 +195,24 @@ wire [31:0] rf_rdata2;
 
 assign br_bus       = {br_taken,br_target};
 
-assign ds_to_es_bus = {hl_from_rs  ,  //145:145
-                       alu_op      ,  //144:133
-                       mul_op      ,  //132:131
-                       div_op      ,  //130:129
-                       load_op     ,  //128:128
-                       src1_is_sa  ,  //127:127
-                       src1_is_pc  ,  //126:126
-                       src1_is_hi  ,  //125:125
-                       src1_is_lo  ,  //124:124
-                       src2_is_imm ,  //123:123
-                       src2_is_uimm,  //122:122
-                       src2_is_8   ,  //121:121
-                       gr_we       ,  //120:120
-                       ds_hi_we       ,  //119:119
-                       ds_lo_we       ,  //118:118
-                       mem_we      ,  //117:117
+assign ds_to_es_bus = {hl_from_rs  ,  //161:161
+                       inst_load   ,  //160:154
+                       inst_store  ,  //153:149
+                       alu_op      ,  //148:137
+                       mul_op      ,  //136:135
+                       div_op      ,  //134:133
+                       load_op     ,  //132:132
+                       ld_extd_op  ,  //131:127
+                       src1_is_sa  ,  //126:126
+                       src1_is_pc  ,  //125:125
+                       src1_is_hi  ,  //124:124
+                       src1_is_lo  ,  //123:123
+                       src2_is_imm ,  //122:122
+                       src2_is_uimm,  //121:121
+                       src2_is_8   ,  //120:120
+                       gr_we       ,  //119:119
+                       ds_hi_we    ,  //118:118
+                       ds_lo_we    ,  //117:117
                        dest        ,  //116:112
                        imm         ,  //111:96
                        rs_value    ,  //95 :64
@@ -266,12 +279,21 @@ assign inst_sra    = op_d[6'h00] & func_d[6'h03] & rs_d[5'h00];
 assign inst_srav   = op_d[6'h00] & func_d[6'h07] & sa_d[5'h00];
 assign inst_addiu  = op_d[6'h09];
 assign inst_lui    = op_d[6'h0f] & rs_d[5'h00];
+
+assign inst_load   = {inst_lw, inst_lb, inst_lbu, inst_lh, inst_lhu, inst_lwl, inst_lwr};
 assign inst_lw     = op_d[6'h23];
 assign inst_lb     = op_d[6'h20];
 assign inst_lbu    = op_d[6'h24];
 assign inst_lh     = op_d[6'h21];
 assign inst_lhu    = op_d[6'h25];
+assign inst_lwl    = op_d[6'h22];
+assign inst_lwr    = op_d[6'h26];
+assign inst_store  = {inst_sw, inst_sb, inst_sh, inst_swl, inst_swr};
 assign inst_sw     = op_d[6'h2b];
+assign inst_sb     = op_d[6'h28];
+assign inst_sh     = op_d[6'h29];
+assign inst_swl    = op_d[6'h2a];
+assign inst_swr    = op_d[6'h2e];
 assign inst_beq    = op_d[6'h04];
 assign inst_bne    = op_d[6'h05];
 assign inst_bgez   = op_d[6'h01] & rt_d[5'h01];
@@ -317,7 +339,8 @@ assign br_op[  3] = inst_bgtz;
 assign br_op[  4] = inst_blez;
 assign br_op[  5] = inst_bltz | inst_bltzal;
 
-assign load_op    = inst_lw;
+assign load_op    = inst_lw | inst_lb | inst_lbu | inst_lh | inst_lhu | inst_lwl | inst_lwr;
+assign ld_extd_op = {inst_lb, inst_lbu, inst_lh, inst_lhu, inst_lwl | inst_lwr}
 
 assign src1_is_sa   = inst_sll   | inst_srl   | inst_sra;
 assign src1_is_pc   = inst_jal   | inst_jalr  | inst_bgezal| inst_bltzal;
@@ -336,7 +359,6 @@ assign gr_we        = ~inst_beq & ~inst_bne & ~inst_bgez & ~inst_bgtz & ~inst_bl
 assign ds_hi_we     = inst_mult  | inst_multu | inst_div   | inst_divu  | inst_mthi;
 assign ds_lo_we     = inst_mult  | inst_multu | inst_div   | inst_divu  | inst_mtlo;
 assign hl_from_rs   = inst_mthi  | inst_mtlo;
-assign mem_we       = inst_sw;
 
 assign dest         = dst_is_r31 ? 5'd31 :
                       dst_is_rt  ? rt    : 
