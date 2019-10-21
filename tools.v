@@ -208,8 +208,64 @@ endmodule
 
 
 module ld_decode(
+    input   [6:0] inst_load,
+    input   [1:0] addr,
+    input         gr_we_1,  // 1 bit we
 
+    output  [3:0] ld_rshift_op,
+    output  [3:0] gr_we
 );
+
+wire    lw;
+wire    lb;
+wire    lbu;
+wire    lh;
+wire    lhu;
+wire    lwl;
+wire    lwr;
+wire    non_load;
+
+wire [3:0] addr_d;
+
+assign  lw  = inst_load[6];
+assign  lb  = inst_load[5];
+assign  lbu = inst_load[4];
+assign  lh  = inst_load[3];
+assign  lhu = inst_load[2];
+assign  lwl = inst_load[1];
+assign  lwr = inst_load[0];
+assign  non_load = (inst_load == 7'b0); // replicate gr_we_1
+
+decoder_2_4 u_dec(.in(addr), .out(addr_d));
+
+assign  ld_rshift_op[0]  = lw
+                        ||(lb || lbu) && addr_d[0]
+                        ||(lh || lhu) && addr_d[0]
+                        || lwl        && addr_d[3]
+                        || lwr        && addr_d[0];
+assign  ld_rshift_op[1]  =(lb || lbu) && addr_d[1]
+                        || lwl        && addr_d[0]
+                        || lwr        && addr_d[1];
+assign  ld_rshift_op[2]  =(lb || lbu) && addr_d[2]
+                        ||(lh || lhu) && addr_d[2]
+                        || lwl        && addr_d[1]
+                        || lwr        && addr_d[2];
+assign  ld_rshift_op[3]  =(lb || lbu) && addr_d[3]
+                        || lwl        && addr_d[2]
+                        || lwr        && addr_d[3];
+
+assign gr_we[0]  = lw || lb || lbu || lh || lhu || non_load && gr_we_1
+                || lwl && addr_d[3]
+                || lwr;
+assign gr_we[1]  = lw || lb || lbu || lh || lhu || non_load && gr_we_1
+                || lwl && (addr_d[3] || addr_d[2])
+                || lwr && (addr_d[0] || addr_d[1] || addr_d[2]);
+assign gr_we[2]  = lw || lb || lbu || lh || lhu || non_load && gr_we_1
+                || lwl && (addr_d[3] || addr_d[2] || addr_d[1])
+                || lwr && (addr_d[0] || addr_d[1]);
+assign gr_we[3]  = lw || lb || lbu || lh || lhu || non_load && gr_we_1
+                || lwl
+                || lwr && addr_d[0];
 
 endmodule
 
