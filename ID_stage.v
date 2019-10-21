@@ -389,20 +389,20 @@ assign rt_value = forward_reg2_es? es_forward_data:
                   forward_reg2_ws? ws_forward_data:
                                          rf_rdata2;
 forward_merge u_forward_merge_1(
-    .forward      ({!stall_reg1_happen,   stall_reg1_es,   stall_reg1_ms,   stall_reg1_ws}),
-    .forward_en   ({                              es_we,           ms_we,           ws_we}),
-    .forward_data ({                    es_forward_data, ms_forward_data, ws_forward_data}),
-    .rf_rdata     (          rf_rdata1                                                    ),
+    .forward      ({forward_reg1_es, forward_reg1_ms, forward_reg1_ws}),
+    .forward_en   ({          es_we,           ms_we,           ws_we}),
+    .forward_data ({es_forward_data, ms_forward_data, ws_forward_data}),
+    .rf_rdata     (                                          rf_rdata1),
 
-    .merge_value  (                                                               rs_value)
+    .merge_value  (                                           rs_value)
 );
 forward_merge u_forward_merge_2(
-    .forward      ({!stall_reg2_happen,   stall_reg2_es,   stall_reg2_ms,   stall_reg2_ws}),
-    .forward_en   ({                              es_we,           ms_we,           ws_we}),
-    .forward_data ({                    es_forward_data, ms_forward_data, ws_forward_data}),
-    .rf_rdata     (          rf_rdata2                                                    ),
+    .forward      ({forward_reg2_es, forward_reg2_ms, forward_reg2_ws}),
+    .forward_en   ({          es_we,           ms_we,           ws_we}),
+    .forward_data ({es_forward_data, ms_forward_data, ws_forward_data}),
+    .rf_rdata     (                                          rf_rdata2),
 
-    .merge_value  (                                                               rt_value)
+    .merge_value  (                                           rt_value)
 );
 
 assign reg1_stall_valid = rf_raddr1!=5'h0 && !src1_is_sa  && !src1_is_pc;

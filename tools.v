@@ -354,22 +354,40 @@ module st_select(
 endmodule
 
 module forward_merge(
-    input  [ 3:0] forward,
+    input  [ 2:0] forward,
     input  [11:0] forward_en,
     input  [95:0] forward_data,
     input  [31:0] rf_rdata,
 
     output [31:0] merge_value
 );
-wire        forward_no,      forward_es,      forward_ms,      forward_ws;
-wire [ 3:0]               forward_en_es,   forward_en_ms,   forward_en_ws;
-wire [31:0]             forward_data_es, forward_data_ms, forward_data_ws;
+wire             forward_es,      forward_ms,      forward_ws;
+wire [ 3:0]   forward_en_es,   forward_en_ms,   forward_en_ws;
+wire [31:0] forward_data_es, forward_data_ms, forward_data_ws;
+wire [ 3:0] no_forward;
+assign {     forward_es,      forward_ms,      forward_ws} = forward;
 assign {  forward_en_es,   forward_en_ms,   forward_en_ws} = forward_en;
 assign {forward_data_es, forward_data_ms, forward_data_ws} = forward_data;
+assign no_forward = ! ({4{forward_es}} & forward_en_es
+                     | {4{forward_ms}} & forward_en_ms
+                     | {4{forward_ws}} & forward_en_ws);
 
-assign merge_value[ 7: 0] = forward_no & rf_rdata[ 7: 0]
-                          | forward_ws & 
-
+assign merge_value[ 7: 0] = {8{forward_es & forward_en_es[0]}} & forward_data_es[ 7: 0]
+                          | {8{forward_ms & forward_en_ms[0]}} & forward_data_ms[ 7: 0]
+                          | {8{forward_ws & forward_en_ws[0]}} & forward_data_ws[ 7: 0]
+                          | {8{                no_forward[0]}} &        rf_rdata[ 7: 0];
+assign merge_value[15: 8] = {8{forward_es & forward_en_es[1]}} & forward_data_es[15: 8]
+                          | {8{forward_ms & forward_en_ms[1]}} & forward_data_ms[15: 8]
+                          | {8{forward_ws & forward_en_ws[1]}} & forward_data_ws[15: 8]
+                          | {8{                no_forward[1]}} &        rf_rdata[15: 8];
+assign merge_value[23:16] = {8{forward_es & forward_en_es[2]}} & forward_data_es[23:16]
+                          | {8{forward_ms & forward_en_ms[2]}} & forward_data_ms[23:16]
+                          | {8{forward_ws & forward_en_ws[2]}} & forward_data_ws[23:16]
+                          | {8{                no_forward[2]}} &        rf_rdata[23:16];
+assign merge_value[31:24] = {8{forward_es & forward_en_es[3]}} & forward_data_es[31:24]
+                          | {8{forward_ms & forward_en_ms[3]}} & forward_data_ms[31:24]
+                          | {8{forward_ws & forward_en_ws[3]}} & forward_data_ws[31:24]
+                          | {8{                no_forward[3]}} &        rf_rdata[31:24];
 
 endmodule
 
