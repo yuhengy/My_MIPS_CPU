@@ -157,6 +157,8 @@ wire        inst_bgez;
 wire        inst_bgtz;
 wire        inst_blez;
 wire        inst_bltz;
+wire        inst_bgezal;
+wire        inst_bltzal;
 
 wire        inst_j;
 wire        inst_jal;
@@ -267,6 +269,8 @@ assign inst_bgez   = op_d[6'h01] & rt_d[5'h01];
 assign inst_bgtz   = op_d[6'h07] & rt_d[5'h00];
 assign inst_blez   = op_d[6'h06] & rt_d[5'h00];
 assign inst_bltz   = op_d[6'h01] & rt_d[5'h00];
+assign inst_bgezal = op_d[6'h01] & rt_d[5'h11];
+assign inst_bltzal = op_d[6'h01] & rt_d[5'h10];
 
 assign inst_j      = op_d[6'h02];
 assign inst_jal    = op_d[6'h03];
@@ -278,7 +282,7 @@ assign inst_mthi   = op_d[6'h00] & func_d[6'h11] & rt_d[5'h00] & rd_d[5'h00] & s
 assign inst_mtlo   = op_d[6'h00] & func_d[6'h13] & rt_d[5'h00] & rd_d[5'h00] & sa_d[5'h00];
 
 assign alu_op[ 0] = inst_add | inst_addi | inst_addu | inst_addiu
-                  | inst_lw  | inst_sw   | inst_jal;
+                  | inst_lw  | inst_sw   | inst_jal  | inst_bgezal | inst_bltzal;
 assign alu_op[ 1] = inst_sub | inst_subu;
 assign alu_op[ 2] = inst_slt | inst_slti;
 assign alu_op[ 3] = inst_sltu | inst_sltiu;
@@ -298,23 +302,23 @@ assign div_op[ 1] = inst_divu;
 
 assign br_op[  0] = inst_beq;
 assign br_op[  1] = inst_bne;
-assign br_op[  2] = inst_bgez;
+assign br_op[  2] = inst_bgez | inst_bgezal;
 assign br_op[  3] = inst_bgtz;
 assign br_op[  4] = inst_blez;
-assign br_op[  5] = inst_bltz;
+assign br_op[  5] = inst_bltz | inst_bltzal;
 
 assign load_op    = inst_lw;
 
 assign src1_is_sa   = inst_sll   | inst_srl   | inst_sra;
-assign src1_is_pc   = inst_jal;
+assign src1_is_pc   = inst_jal   | inst_bgezal| inst_bltzal;
 assign src1_is_hi   = inst_mfhi;
 assign src1_is_lo   = inst_mflo;
 assign src2_is_imm  = inst_addi  | inst_addiu | inst_slti  | inst_sltiu
                     | inst_lui   | inst_lw    | inst_sw;
 assign src2_is_uimm = inst_andi  | inst_ori   | inst_xori;
-assign src2_is_8    = inst_jal;
+assign src2_is_8    = inst_jal   | inst_bgezal| inst_bltzal;
 assign res_from_mem = inst_lw;
-assign dst_is_r31   = inst_jal;
+assign dst_is_r31   = inst_jal   | inst_bgezal| inst_bltzal;
 assign dst_is_rt    = inst_addi  | inst_addiu | inst_slti  | inst_sltiu
                     | inst_andi  | inst_ori   | inst_xori  | inst_lui   | inst_lw;
 assign gr_we        = ~inst_beq & ~inst_bne & ~inst_bgez & ~inst_bgtz & ~inst_blez & ~inst_bltz
