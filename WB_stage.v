@@ -42,7 +42,7 @@ assign ws_to_rf_bus = {rf_we   ,  //37:37
                        rf_wdata   //31:0
                       };
 
-assign stall_ws_bus = {{4{ws_valid}} & ws_gr_we,
+assign stall_ws_bus = {ws_valid && (|ws_gr_we), {4{ws_valid}} & ws_gr_we,
                        ws_dest};
 assign forward_ws_bus = {ws_valid,
                          ws_final_result};

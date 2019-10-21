@@ -111,7 +111,7 @@ assign es_to_ms_bus = {es_res_from_mem,  //82:82
                        es_pc             //31:0
                       };
 
-assign stall_es_bus = {{4{es_valid && es_gr_we}},
+assign stall_es_bus = {{5{es_valid && es_gr_we}},
                        es_dest};
 assign forward_es_bus = {es_valid && !es_res_from_mem,
                          es_alu_result};

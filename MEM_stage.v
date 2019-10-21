@@ -50,7 +50,7 @@ assign ms_to_ws_bus = {ms_gr_we       ,  //72:69
                        ms_pc             //31:0
                       };
 
-assign stall_ms_bus = {{4{ms_valid}} & ms_gr_we,
+assign stall_ms_bus = {ms_valid && ms_gr_we_1, {4{ms_valid}} & ms_gr_we,
                        ms_dest};
 assign forward_ms_bus = {ms_valid,
                          ms_final_result};

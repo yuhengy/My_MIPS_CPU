@@ -43,10 +43,13 @@ assign {rf_we   ,  //37:37
 
 wire        reg1_stall_valid;
 wire        reg2_stall_valid;
+wire        es_we_1;
 wire [ 3:0] es_we;
 wire [ 4:0] es_dest;
+wire        ms_we_1;
 wire [ 3:0] ms_we;
 wire [ 4:0] ms_dest;
+wire        ws_we_1;
 wire [ 3:0] ws_we;
 wire [ 4:0] ws_dest;
 wire        es_forward_valid;
@@ -73,9 +76,9 @@ wire        forward_reg2_ws;
 wire        forward_reg1_happen;
 wire        forward_reg2_happen;
 wire        forward_happen;
-assign {es_we            ,es_dest,
-        ms_we            ,ms_dest,
-        ws_we            ,ws_dest}         = stall_ds_bus;
+assign {es_we_1, es_we   ,es_dest,
+        ms_we_1, ms_we   ,ms_dest,
+        ws_we_1, ws_we   ,ws_dest}         = stall_ds_bus;
 assign {es_forward_valid ,es_forward_data,
         ms_forward_valid ,ms_forward_data,
         ws_forward_valid ,ws_forward_data} = forward_ds_bus;
@@ -341,7 +344,7 @@ assign br_op[  5] = inst_bltz | inst_bltzal;
 
 assign load_op    = inst_lw | inst_lb | inst_lbu | inst_lh  | inst_lhu | inst_lwl | inst_lwr;
 assign store_op   = inst_sw | inst_sb | inst_sh  | inst_swl | inst_swr;
-assign ld_extd_op = {inst_lb, inst_lbu, inst_lh, inst_lhu, inst_lwl | inst_lwr}
+assign ld_extd_op = {inst_lb, inst_lbu, inst_lh, inst_lhu, inst_lw | inst_lwl | inst_lwr}
 
 assign src1_is_sa   = inst_sll   | inst_srl   | inst_sra;
 assign src1_is_pc   = inst_jal   | inst_jalr  | inst_bgezal| inst_bltzal;
@@ -385,15 +388,31 @@ assign rt_value = forward_reg2_es? es_forward_data:
                   forward_reg2_ms? ms_forward_data:
                   forward_reg2_ws? ws_forward_data:
                                          rf_rdata2;
+forward_merge u_forward_merge_1(
+    .forward      ({!stall_reg1_happen,   stall_reg1_es,   stall_reg1_ms,   stall_reg1_ws}),
+    .forward_en   ({                              es_we,           ms_we,           ws_we}),
+    .forward_data ({                    es_forward_data, ms_forward_data, ws_forward_data}),
+    .rf_rdata     (          rf_rdata1                                                    ),
+
+    .merge_value  (                                                               rs_value)
+);
+forward_merge u_forward_merge_2(
+    .forward      ({!stall_reg2_happen,   stall_reg2_es,   stall_reg2_ms,   stall_reg2_ws}),
+    .forward_en   ({                              es_we,           ms_we,           ws_we}),
+    .forward_data ({                    es_forward_data, ms_forward_data, ws_forward_data}),
+    .rf_rdata     (          rf_rdata2                                                    ),
+
+    .merge_value  (                                                               rt_value)
+);
 
 assign reg1_stall_valid = rf_raddr1!=5'h0 && !src1_is_sa  && !src1_is_pc;
 assign reg2_stall_valid = rf_raddr2!=5'h0 && (!src2_is_imm || store_op) && !src2_is_8 ;
-assign stall_reg1_es = reg1_stall_valid && (|es_we) && rf_raddr1==es_dest;
-assign stall_reg1_ms = reg1_stall_valid && (|ms_we) && rf_raddr1==ms_dest;
-assign stall_reg1_ws = reg1_stall_valid && (|ws_we) && rf_raddr1==ws_dest;
-assign stall_reg2_es = reg2_stall_valid && (|es_we) && rf_raddr2==es_dest;
-assign stall_reg2_ms = reg2_stall_valid && (|ms_we) && rf_raddr2==ms_dest;
-assign stall_reg2_ws = reg2_stall_valid && (|ws_we) && rf_raddr2==ws_dest;
+assign stall_reg1_es = reg1_stall_valid && es_we_1 && rf_raddr1==es_dest;
+assign stall_reg1_ms = reg1_stall_valid && ms_we_1 && rf_raddr1==ms_dest;
+assign stall_reg1_ws = reg1_stall_valid && ws_we_1 && rf_raddr1==ws_dest;
+assign stall_reg2_es = reg2_stall_valid && es_we_1 && rf_raddr2==es_dest;
+assign stall_reg2_ms = reg2_stall_valid && ms_we_1 && rf_raddr2==ms_dest;
+assign stall_reg2_ws = reg2_stall_valid && ws_we_1 && rf_raddr2==ws_dest;
 assign stall_reg1_happen = stall_reg1_es || stall_reg1_ms || stall_reg1_ws;
 assign stall_reg2_happen = stall_reg2_es || stall_reg2_ms || stall_reg2_ws;
 assign stall_happen = stall_reg1_happen || stall_reg2_happen;
