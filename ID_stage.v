@@ -90,6 +90,7 @@ wire [11:0] alu_op;
 wire [ 1:0] mul_op;
 wire [ 1:0] div_op;
 wire        load_op;
+wire        store_op;
 wire [ 4:0] ld_extd_op;
 wire        src1_is_sa;
 wire        src1_is_pc;
@@ -98,7 +99,6 @@ wire        src1_is_lo;
 wire        src2_is_imm;
 wire        src2_is_uimm;
 wire        src2_is_8;
-wire        res_from_mem;
 wire        gr_we;
 wire        ds_hi_we;   // move to es; not affecting hi_we
 wire        ds_lo_we;
@@ -314,7 +314,7 @@ assign inst_mthi   = op_d[6'h00] & func_d[6'h11] & rt_d[5'h00] & rd_d[5'h00] & s
 assign inst_mtlo   = op_d[6'h00] & func_d[6'h13] & rt_d[5'h00] & rd_d[5'h00] & sa_d[5'h00];
 
 assign alu_op[ 0] = inst_add | inst_addi | inst_addu | inst_addiu
-                  | inst_lw  | inst_sw   | inst_jal  | inst_jalr | inst_bgezal | inst_bltzal;
+                  | load_op  | store_op  | inst_jal  | inst_jalr | inst_bgezal | inst_bltzal;
 assign alu_op[ 1] = inst_sub | inst_subu;
 assign alu_op[ 2] = inst_slt | inst_slti;
 assign alu_op[ 3] = inst_sltu | inst_sltiu;
@@ -339,7 +339,8 @@ assign br_op[  3] = inst_bgtz;
 assign br_op[  4] = inst_blez;
 assign br_op[  5] = inst_bltz | inst_bltzal;
 
-assign load_op    = inst_lw | inst_lb | inst_lbu | inst_lh | inst_lhu | inst_lwl | inst_lwr;
+assign load_op    = inst_lw | inst_lb | inst_lbu | inst_lh  | inst_lhu | inst_lwl | inst_lwr;
+assign store_op   = inst_sw | inst_sb | inst_sh  | inst_swl | inst_swr;
 assign ld_extd_op = {inst_lb, inst_lbu, inst_lh, inst_lhu, inst_lwl | inst_lwr}
 
 assign src1_is_sa   = inst_sll   | inst_srl   | inst_sra;
@@ -347,15 +348,14 @@ assign src1_is_pc   = inst_jal   | inst_jalr  | inst_bgezal| inst_bltzal;
 assign src1_is_hi   = inst_mfhi;
 assign src1_is_lo   = inst_mflo;
 assign src2_is_imm  = inst_addi  | inst_addiu | inst_slti  | inst_sltiu
-                    | inst_lui   | inst_lw    | inst_sw;
+                    | inst_lui   | load_op    | store_op;
 assign src2_is_uimm = inst_andi  | inst_ori   | inst_xori;
 assign src2_is_8    = inst_jal   | inst_jalr  | inst_bgezal| inst_bltzal;
-assign res_from_mem = inst_lw;
 assign dst_is_r31   = inst_jal   | inst_bgezal| inst_bltzal;
 assign dst_is_rt    = inst_addi  | inst_addiu | inst_slti  | inst_sltiu
-                    | inst_andi  | inst_ori   | inst_xori  | inst_lui   | inst_lw;
+                    | inst_andi  | inst_ori   | inst_xori  | inst_lui   | load_op;
 assign gr_we        = ~inst_beq & ~inst_bne & ~inst_bgez & ~inst_bgtz & ~inst_blez & ~inst_bltz
-                    & ~inst_sw  & ~inst_j   & ~inst_jr  & ~inst_mthi & ~inst_mtlo;
+                    & ~store_op & ~inst_j   & ~inst_jr   & ~inst_mthi & ~inst_mtlo;
 assign ds_hi_we     = inst_mult  | inst_multu | inst_div   | inst_divu  | inst_mthi;
 assign ds_lo_we     = inst_mult  | inst_multu | inst_div   | inst_divu  | inst_mtlo;
 assign hl_from_rs   = inst_mthi  | inst_mtlo;
@@ -387,7 +387,7 @@ assign rt_value = forward_reg2_es? es_forward_data:
                                          rf_rdata2;
 
 assign reg1_stall_valid = rf_raddr1!=5'h0 && !src1_is_sa  && !src1_is_pc;
-assign reg2_stall_valid = rf_raddr2!=5'h0 && (!src2_is_imm || inst_sw) && !src2_is_8 ;
+assign reg2_stall_valid = rf_raddr2!=5'h0 && (!src2_is_imm || store_op) && !src2_is_8 ;
 assign stall_reg1_es = reg1_stall_valid && es_we && rf_raddr1==es_dest;
 assign stall_reg1_ms = reg1_stall_valid && ms_we && rf_raddr1==ms_dest;
 assign stall_reg1_ws = reg1_stall_valid && ws_we && rf_raddr1==ws_dest;

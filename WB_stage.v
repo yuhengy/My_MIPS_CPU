@@ -24,11 +24,11 @@ reg         ws_valid;
 wire        ws_ready_go;
 
 reg [`MS_TO_WS_BUS_WD -1:0] ms_to_ws_bus_r;
-wire        ws_gr_we;
-wire [ 4:0] ws_dest;
+wire [ 3:0] ws_gr_we       ;
+wire [ 4:0] ws_dest        ;
 wire [31:0] ws_final_result;
-wire [31:0] ws_pc;
-assign {ws_gr_we       ,  //69:69
+wire [31:0] ws_pc          ;
+assign {ws_gr_we       ,  //72:69
         ws_dest        ,  //68:64
         ws_final_result,  //63:32
         ws_pc             //31:0
@@ -61,7 +61,7 @@ always @(posedge clk) begin
     end
 end
 
-assign rf_we    = ws_gr_we&&ws_valid;
+assign rf_we    = ws_gr_we & ws_valid;
 assign rf_waddr = ws_dest;
 assign rf_wdata = ws_final_result;
 

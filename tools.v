@@ -215,10 +215,10 @@ endmodule
 
 
 module st_decode(
-    input  [4:0] store_op,
+    input  [4:0] inst_store,
     input  [1:0] addr,
 
-    output [3:0] sel,   // rshift amount on selector
+    output [3:0] st_rshift_op,   // rshift amount on selector
     output [3:0] mem_we
 );
 
@@ -230,28 +230,29 @@ wire    swr;
 
 wire [3:0] addr_d;
 
-assign  sw  = store_op[4];
-assign  sb  = store_op[3];
-assign  sh  = store_op[2];
-assign  swl = store_op[1];
-assign  swr = store_op[0];
+assign  sw  = inst_store[4];
+assign  sb  = inst_store[3];
+assign  sh  = inst_store[2];
+assign  swl = inst_store[1];
+assign  swr = inst_store[0];
 
 decoder_2_4 u_dec(.in(addr), .out(addr_d));
 
-assign  sel[0]  = sw || sb && addr_d[0]
-                ||sh && addr_d[0]
-                ||swl&& addr_d[3]
-                ||swr&& addr_d[0];
-assign  sel[1]  = sb && addr_d[3]
-                ||swl&& addr_d[2]
-                ||swr&& addr_d[3];
-assign  sel[2]  = sb && addr_d[2]
-                ||sh && addr_d[2]
-                ||swl&& addr_d[1]
-                ||swr&& addr_d[2];
-assign  sel[3]  = sb && addr_d[1]
-                ||swl&& addr_d[0]
-                ||swr&& addr_d[1];
+assign  st_rshift_op[0]  = sw 
+                        || sb && addr_d[0]
+                        || sh && addr_d[0]
+                        || swl&& addr_d[3]
+                        || swr&& addr_d[0];
+assign  st_rshift_op[1]  = sb && addr_d[3]
+                        || swl&& addr_d[2]
+                        || swr&& addr_d[3];
+assign  st_rshift_op[2]  = sb && addr_d[2]
+                        || sh && addr_d[2]
+                        || swl&& addr_d[1]
+                        || swr&& addr_d[2];
+assign  st_rshift_op[3]  = sb && addr_d[1]
+                        || swl&& addr_d[0]
+                        || swr&& addr_d[1];
 
 assign mem_we[0] = sw || sb && addr_d[0]
                 || sh && addr_d[0]

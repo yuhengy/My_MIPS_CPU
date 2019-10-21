@@ -34,7 +34,7 @@ wire [ 1:0] es_mul_op     ;
 wire [ 1:0] es_div_op     ;
 wire        es_load_op    ;
 wire [ 4:0] es_ld_extd_op ;
-wire [ 4:0] es_st_rshift_op;
+wire [ 3:0] es_st_rshift_op;
 wire        es_src1_is_sa ;  
 wire        es_src1_is_pc ;
 wire        es_src1_is_hi ;
@@ -102,10 +102,9 @@ assign es_res_from_mem = es_load_op;
 assign es_res_from_mul = es_mul_op[0] | es_mul_op[1];
 assign es_res_from_div = es_div_op[0] | es_div_op[1];
 
-assign es_to_ms_bus = {es_res_from_mem,  //82:82
-                       es_inst_load   ,  //81:75
-                       es_ld_extd_op  ,  //74:70
-                       es_gr_we       ,  //69:69
+assign es_to_ms_bus = {es_res_from_mem,  //81:81
+                       es_inst_load   ,  //80:74
+                       es_ld_extd_op  ,  //73:69
                        es_dest        ,  //68:64
                        es_alu_result  ,  //63:32
                        es_pc             //31:0
@@ -192,15 +191,18 @@ assign data_sram_wen   = es_mem_we & es_valid;
 assign data_sram_addr  = es_alu_result;
 
 st_decode u_st_decode(
-es_inst_store
-es_mem_we
+    .inst_store(es_inst_store),
+    .addr(data_sram_addr[1:0]),
+
+    .st_rshift_op(es_st_rshift_op),
+    .mem_we(es_mem_we)
 );
 
 st_select u_st_select(
-    .st_rshift_op(es_st_rshift_op),
-    .data_from_reg(es_rt_value),
+    .st_rshift_op    (es_st_rshift_op),
+    .data_from_reg   (es_rt_value    ),
 
-    .data_sram_wdata(data_sram_wdata)
+    .data_sram_wdata (data_sram_wdata)
 );
 
 endmodule
