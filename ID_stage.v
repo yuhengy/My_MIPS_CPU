@@ -157,6 +157,8 @@ wire        inst_bgez;
 wire        inst_bgtz;
 wire        inst_blez;
 wire        inst_bltz;
+
+wire        inst_j;
 wire        inst_jal;
 wire        inst_jr;
 
@@ -265,6 +267,8 @@ assign inst_bgez   = op_d[6'h01] & rt_d[5'h01];
 assign inst_bgtz   = op_d[6'h07] & rt_d[5'h00];
 assign inst_blez   = op_d[6'h06] & rt_d[5'h00];
 assign inst_bltz   = op_d[6'h01] & rt_d[5'h00];
+
+assign inst_j      = op_d[6'h02];
 assign inst_jal    = op_d[6'h03];
 assign inst_jr     = op_d[6'h00] & func_d[6'h08] & rt_d[5'h00] & rd_d[5'h00] & sa_d[5'h00];
 
@@ -314,7 +318,7 @@ assign dst_is_r31   = inst_jal;
 assign dst_is_rt    = inst_addi  | inst_addiu | inst_slti  | inst_sltiu
                     | inst_andi  | inst_ori   | inst_xori  | inst_lui   | inst_lw;
 assign gr_we        = ~inst_beq & ~inst_bne & ~inst_bgez & ~inst_bgtz & ~inst_blez & ~inst_bltz
-                    & ~inst_sw  & ~inst_jr  & ~inst_mthi & ~inst_mtlo;
+                    & ~inst_sw  & ~inst_j   & ~inst_jr  & ~inst_mthi & ~inst_mtlo;
 assign ds_hi_we     = inst_mult  | inst_multu | inst_div   | inst_divu  | inst_mthi;
 assign ds_lo_we     = inst_mult  | inst_multu | inst_div   | inst_divu  | inst_mtlo;
 assign hl_from_rs   = inst_mthi  | inst_mtlo;
@@ -379,11 +383,12 @@ br_comp u_br_comp(
 );
 
 assign br_taken = (   br_happen
+                   || inst_j
                    || inst_jal
                    || inst_jr
                   ) && ds_valid;
 assign br_target = (|br_op ) ? (fs_pc + {{14{imm[15]}}, imm[15:0], 2'b0}) :
                    (inst_jr)              ? rs_value :
-                  /*inst_jal*/              {fs_pc[31:28], jidx[25:0], 2'b0};
+                  /*inst_j, inst_jal*/      {fs_pc[31:28], jidx[25:0], 2'b0};
 
 endmodule
