@@ -163,6 +163,7 @@ wire        inst_bltzal;
 wire        inst_j;
 wire        inst_jal;
 wire        inst_jr;
+wire        inst_jalr;
 
 wire        inst_mfhi;
 wire        inst_mflo;
@@ -275,6 +276,7 @@ assign inst_bltzal = op_d[6'h01] & rt_d[5'h10];
 assign inst_j      = op_d[6'h02];
 assign inst_jal    = op_d[6'h03];
 assign inst_jr     = op_d[6'h00] & func_d[6'h08] & rt_d[5'h00] & rd_d[5'h00] & sa_d[5'h00];
+assign inst_jalr   = op_d[6'h00] & func_d[6'h09] & rt_d[5'h00] & sa_d[5'h00];
 
 assign inst_mfhi   = op_d[6'h00] & func_d[6'h10] & rs_d[5'h00] & rt_d[5'h00] & sa_d[5'h00];
 assign inst_mflo   = op_d[6'h00] & func_d[6'h12] & rs_d[5'h00] & rt_d[5'h00] & sa_d[5'h00];
@@ -282,7 +284,7 @@ assign inst_mthi   = op_d[6'h00] & func_d[6'h11] & rt_d[5'h00] & rd_d[5'h00] & s
 assign inst_mtlo   = op_d[6'h00] & func_d[6'h13] & rt_d[5'h00] & rd_d[5'h00] & sa_d[5'h00];
 
 assign alu_op[ 0] = inst_add | inst_addi | inst_addu | inst_addiu
-                  | inst_lw  | inst_sw   | inst_jal  | inst_bgezal | inst_bltzal;
+                  | inst_lw  | inst_sw   | inst_jal  | inst_jalr | inst_bgezal | inst_bltzal;
 assign alu_op[ 1] = inst_sub | inst_subu;
 assign alu_op[ 2] = inst_slt | inst_slti;
 assign alu_op[ 3] = inst_sltu | inst_sltiu;
@@ -310,13 +312,13 @@ assign br_op[  5] = inst_bltz | inst_bltzal;
 assign load_op    = inst_lw;
 
 assign src1_is_sa   = inst_sll   | inst_srl   | inst_sra;
-assign src1_is_pc   = inst_jal   | inst_bgezal| inst_bltzal;
+assign src1_is_pc   = inst_jal   | inst_jalr  | inst_bgezal| inst_bltzal;
 assign src1_is_hi   = inst_mfhi;
 assign src1_is_lo   = inst_mflo;
 assign src2_is_imm  = inst_addi  | inst_addiu | inst_slti  | inst_sltiu
                     | inst_lui   | inst_lw    | inst_sw;
 assign src2_is_uimm = inst_andi  | inst_ori   | inst_xori;
-assign src2_is_8    = inst_jal   | inst_bgezal| inst_bltzal;
+assign src2_is_8    = inst_jal   | inst_jalr  | inst_bgezal| inst_bltzal;
 assign res_from_mem = inst_lw;
 assign dst_is_r31   = inst_jal   | inst_bgezal| inst_bltzal;
 assign dst_is_rt    = inst_addi  | inst_addiu | inst_slti  | inst_sltiu
@@ -390,9 +392,10 @@ assign br_taken = (   br_happen
                    || inst_j
                    || inst_jal
                    || inst_jr
+                   || inst_jalr
                   ) && ds_valid;
 assign br_target = (|br_op ) ? (fs_pc + {{14{imm[15]}}, imm[15:0], 2'b0}) :
-                   (inst_jr)              ? rs_value :
+                   (inst_jr || inst_jalr) ? rs_value :
                   /*inst_j, inst_jal*/      {fs_pc[31:28], jidx[25:0], 2'b0};
 
 endmodule
