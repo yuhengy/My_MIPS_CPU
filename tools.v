@@ -338,11 +338,30 @@ module ld_select(
     output [31:0] mem_result
 );
 wire [31:0] mem_result_unextd;
+wire        ext_b;
+wire        ext_bu;
+wire        ext_h;
+wire        ext_hu;
+wire        ext_non;
+
+assign ext_b    = ld_extd_op[4];
+assign ext_bu   = ld_extd_op[3];
+assign ext_h    = ld_extd_op[2];
+assign ext_hu   = ld_extd_op[1];
+assign ext_non  = ld_extd_op[0];
+
 assign mem_result_unextd = {32{ld_rshift_op[0]}} & {data_sram_rdata}
                          | {32{ld_rshift_op[1]}} & {data_sram_rdata[7:0], data_sram_rdata[31:8]}
-                         | {32{ld_rshift_op[2]}} 
+                         | {32{ld_rshift_op[2]}} & {data_sram_rdata[15:0], data_sram_rdata[31:16]}
+                         | {32{ld_rshift_op[3]}} & {data_sram_rdata[23:0], data_sram_rdata[31:24]};
+assign mem_result   = {32{ext_b}}   & {{24{mem_result_unextd[7]}}, mem_result_unextd[7:0]}
+                    | {32{ext_bu}}  & {24'b0, mem_result_unextd[7:0]}
+                    | {32{ext_h}}   & {{16{mem_result_unextd[15]}}, mem_result_unextd[15:0]}
+                    | {32{ext_hu}}  & {16'b0, mem_result_unextd[15:0]}
+                    | {32{ext_non}} & {mem_result_unextd};
 
 endmodule
+
 
 module st_select(
     input  [ 3:0] st_rshift_op,
@@ -350,6 +369,11 @@ module st_select(
 
     output [31:0] data_sram_wdata
 );
+
+assign data_sram_rdata  = {32{st_rshift_op[0]}} & {data_from_reg}
+                        | {32{st_rshift_op[1]}} & {data_from_reg[7:0], data_from_reg[31:8]}
+                        | {32{st_rshift_op[2]}} & {data_from_reg[15:0], data_from_reg[31:16]}
+                        | {32{st_rshift_op[3]}} & {data_from_reg[23:0], data_from_reg[31:24]};
 
 endmodule
 
