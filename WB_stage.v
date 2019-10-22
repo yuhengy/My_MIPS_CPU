@@ -34,10 +34,10 @@ assign {ws_gr_we       ,  //72:69
         ws_pc             //31:0
        } = ms_to_ws_bus_r;
 
-wire        rf_we;
+wire [3 :0] rf_we;
 wire [4 :0] rf_waddr;
 wire [31:0] rf_wdata;
-assign ws_to_rf_bus = {rf_we   ,  //37:37
+assign ws_to_rf_bus = {rf_we   ,  //40:37
                        rf_waddr,  //36:32
                        rf_wdata   //31:0
                       };
@@ -61,13 +61,13 @@ always @(posedge clk) begin
     end
 end
 
-assign rf_we    = ws_gr_we & ws_valid;
+assign rf_we    = ws_gr_we & {4{ws_valid}};
 assign rf_waddr = ws_dest;
 assign rf_wdata = ws_final_result;
 
 // debug info generate
 assign debug_wb_pc       = ws_pc;
-assign debug_wb_rf_wen   = {4{rf_we}};
+assign debug_wb_rf_wen   = rf_we;
 assign debug_wb_rf_wnum  = ws_dest;
 assign debug_wb_rf_wdata = ws_final_result;
 
