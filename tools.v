@@ -370,7 +370,7 @@ module st_select(
     output [31:0] data_sram_wdata
 );
 
-assign data_sram_rdata  = {32{st_rshift_op[0]}} & {data_from_reg}
+assign data_sram_wdata  = {32{st_rshift_op[0]}} & {data_from_reg}
                         | {32{st_rshift_op[1]}} & {data_from_reg[7:0], data_from_reg[31:8]}
                         | {32{st_rshift_op[2]}} & {data_from_reg[15:0], data_from_reg[31:16]}
                         | {32{st_rshift_op[3]}} & {data_from_reg[23:0], data_from_reg[31:24]};
@@ -392,7 +392,7 @@ wire [ 3:0] no_forward;
 assign {     forward_es,      forward_ms,      forward_ws} = forward;
 assign {  forward_en_es,   forward_en_ms,   forward_en_ws} = forward_en;
 assign {forward_data_es, forward_data_ms, forward_data_ws} = forward_data;
-assign no_forward = ! ({4{forward_es}} & forward_en_es
+assign no_forward = ~ ({4{forward_es}} & forward_en_es
                      | {4{forward_ms}} & forward_en_ms
                      | {4{forward_ws}} & forward_en_ws);
 

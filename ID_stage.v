@@ -380,14 +380,6 @@ regfile u_regfile(
     .wdata  (rf_wdata )
     );
 
-assign rs_value = forward_reg1_es? es_forward_data:
-                  forward_reg1_ms? ms_forward_data:
-                  forward_reg1_ws? ws_forward_data:
-                                         rf_rdata1;
-assign rt_value = forward_reg2_es? es_forward_data:
-                  forward_reg2_ms? ms_forward_data:
-                  forward_reg2_ws? ws_forward_data:
-                                         rf_rdata2;
 forward_merge u_forward_merge_1(
     .forward      ({forward_reg1_es, forward_reg1_ms, forward_reg1_ws}),
     .forward_en   ({          es_we,           ms_we,           ws_we}),
