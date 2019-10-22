@@ -12,6 +12,6 @@ The listing of this directory:
 |	|--WB_stage.v		Write-back stage module
 |	|--regfile.v		General register file module
 |	|--alu.v			ALU module
-|	|--tools.v			Decoder modules; Multipier & Divider
+|	|--tools.v			Decoder modules; Multipier & Divider; Modules for LOAD/STORE; Forward merging
 |	|--README			This README file
 
