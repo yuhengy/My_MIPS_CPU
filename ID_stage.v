@@ -397,7 +397,7 @@ forward_merge u_forward_merge_2(
     .merge_value  (                                           rt_value)
 );
 
-assign reg1_stall_valid = rf_raddr1!=5'h0 && !src1_is_sa  && !src1_is_pc;
+assign reg1_stall_valid = rf_raddr1!=5'h0 && !src1_is_sa  && !inst_jal;
 assign reg2_stall_valid = rf_raddr2!=5'h0 && (!src2_is_imm || store_op) && !src2_is_8 ;
 assign stall_reg1_es = reg1_stall_valid && es_we_1 && rf_raddr1==es_dest;
 assign stall_reg1_ms = reg1_stall_valid && ms_we_1 && rf_raddr1==ms_dest;
