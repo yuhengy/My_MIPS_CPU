@@ -344,7 +344,7 @@ assign br_op[  5] = inst_bltz | inst_bltzal;
 
 assign load_op    = inst_lw | inst_lb | inst_lbu | inst_lh  | inst_lhu | inst_lwl | inst_lwr;
 assign store_op   = inst_sw | inst_sb | inst_sh  | inst_swl | inst_swr;
-assign ld_extd_op = {inst_lb, inst_lbu, inst_lh, inst_lhu, inst_lw | inst_lwl | inst_lwr}
+assign ld_extd_op = {inst_lb, inst_lbu, inst_lh, inst_lhu, inst_lw | inst_lwl | inst_lwr};
 
 assign src1_is_sa   = inst_sll   | inst_srl   | inst_sra;
 assign src1_is_pc   = inst_jal   | inst_jalr  | inst_bgezal| inst_bltzal;
