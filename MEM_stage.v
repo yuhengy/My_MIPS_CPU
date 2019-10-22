@@ -71,10 +71,12 @@ always @(posedge clk) begin
 end
 
 ld_decode u_ld_decode(
-ms_gr_we_1
-ms_inst_load
-ms_gr_we
-ms_ld_rshift_op
+    .inst_load(ms_inst_load),
+    .addr(ms_alu_result[1:0]),
+    .gr_we_1(ms_gr_we_1),
+
+    .ld_rshift_op(ms_ld_rshift_op),
+    .gr_we(ms_gr_we)
 );
 
 ld_select u_ld_select(
