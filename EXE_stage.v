@@ -188,7 +188,7 @@ always @(posedge clk) begin
 end
 
 assign data_sram_en    = 1'b1;
-assign data_sram_wen   = es_mem_we & es_valid;
+assign data_sram_wen   = es_mem_we & {4{es_valid}};
 assign data_sram_addr  = es_alu_result;
 
 st_decode u_st_decode(
