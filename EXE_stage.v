@@ -27,6 +27,7 @@ wire        es_ready_go   ;
 
 reg  [`DS_TO_ES_BUS_WD -1:0] ds_to_es_bus_r;
 
+wire        es_eret_flush ;
 wire        es_cp0_wen    ;
 wire        es_res_from_cp0;
 wire [ 7:0] es_cp0_addr   ;
@@ -56,7 +57,8 @@ wire [15:0] es_imm        ;
 wire [31:0] es_rs_value   ;
 wire [31:0] es_rt_value   ;
 wire [31:0] es_pc         ;
-assign {es_cp0_wen     ,  //172:172
+assign {es_eret_flush  ,  //173:173
+        es_cp0_wen     ,  //172:172
         es_res_from_cp0,  //171:171
         es_cp0_addr    ,  //170:163
         es_hl_from_rs  ,  //162:162
@@ -111,7 +113,8 @@ assign es_res_from_mem = es_load_op;
 assign es_res_from_mul = es_mul_op[0] | es_mul_op[1];
 assign es_res_from_div = es_div_op[0] | es_div_op[1];
 
-assign es_to_ms_bus = {es_cp0_wen     ,  //92:92
+assign es_to_ms_bus = {es_eret_flush  ,  //93:93
+                       es_cp0_wen     ,  //92:92
                        es_res_from_cp0,  //91:91
                        es_cp0_addr    ,  //90:83
                        es_res_from_mem,  //82:82

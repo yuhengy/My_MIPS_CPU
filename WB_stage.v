@@ -25,6 +25,7 @@ wire        ws_ready_go;
 
 reg [`MS_TO_WS_BUS_WD -1:0] ms_to_ws_bus_r;
 
+wire        ws_eret_flush  ;
 wire        ws_cp0_wen     ;
 wire        ws_res_from_cp0;
 wire [ 7:0] ws_cp0_addr    ;
@@ -32,7 +33,8 @@ wire [ 3:0] ws_gr_we       ;
 wire [ 4:0] ws_dest        ;
 wire [31:0] ws_final_result;
 wire [31:0] ws_pc          ;
-assign {ws_cp0_wen     ,  //82:82
+assign {ws_eret_flush  ,  //83:83
+        ws_cp0_wen     ,  //82:82
         ws_res_from_cp0,  //81:81
         ws_cp0_addr    ,  //80:73
         ws_gr_we       ,  //72:69
@@ -78,21 +80,21 @@ CP0_reg u_CP0_reg(
     .clk            
     .rst
 
-    .cp0_addr       (ws_cp0_addr    ),
-    .cp0_wen        (ws_cp0_wen     ),
-    .cp0_wdata      (ws_final_result),
+    .cp0_addr   (ws_cp0_addr    ),
+    .cp0_wen    (ws_cp0_wen     ),
+    .cp0_wdata  (ws_final_result),
 
-    .cp0_rdata      (ws_cp0_rdata   ),
+    .cp0_rdata  (ws_cp0_rdata   ),
 
-    .exc_eret_type  (0              ),
-    .PC             (ws_pc          ),
-    .is_slot        (0              ),
-    .int_num        (0              ),
-    .bad_vaddr      (0              ),
+    .exc_type   (0              ),
+    .PC         (ws_pc          ),
+    .is_slot    (0              ),
+    .int_num    (0              ),
+    .bad_vaddr  (0              ),
 
-    .EPC            (               ),
-    .int_happen     (               ),
-    .exc_eret_op    (               )
+    .EPC        (               ),
+    .int_happen (               ),
+    .eret       (ws_eret_flush  )
 );
 
 // debug info generate
