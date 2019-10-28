@@ -49,6 +49,8 @@ assign ws_to_rf_bus = {rf_we   ,  //40:37
                        rf_wdata   //31:0
                       };
 
+wire [31:0] ws_cp0_rdata;
+
 assign stall_ws_bus = {ws_valid && (|ws_gr_we), {4{ws_valid}} & ws_gr_we,
                        ws_dest};
 assign forward_ws_bus = {ws_valid,
@@ -71,6 +73,27 @@ end
 assign rf_we    = ws_gr_we & {4{ws_valid}};
 assign rf_waddr = ws_dest;
 assign rf_wdata = ws_final_result;
+
+CP0_reg u_CP0_reg(
+    .clk            
+    .rst
+
+    .cp0_addr       (ws_cp0_addr    ),
+    .cp0_wen        (ws_cp0_wen     ),
+    .cp0_wdata      (ws_final_result),
+
+    .cp0_rdata      (ws_cp0_rdata   ),
+
+    .exc_eret_type  (0              ),
+    .PC             (ws_pc          ),
+    .is_slot        (0              ),
+    .int_num        (0              ),
+    .bad_vaddr      (0              ),
+
+    .EPC            (               ),
+    .int_happen     (               ),
+    .exc_eret_op    (               )
+);
 
 // debug info generate
 assign debug_wb_pc       = ws_pc;
