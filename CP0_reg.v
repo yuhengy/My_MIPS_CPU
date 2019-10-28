@@ -1,0 +1,159 @@
+module CP0_reg(
+	input        clk,
+	input        rst,
+
+    input  [ 4:0] cp0_addr,
+    output [31:0] cp0_rdata,
+    input         cp0_wen,
+    input  [31:0] cp0_wdata,
+
+    input  [ 7:0] exc_eret_type,
+    input  [31:0] PC,
+    input         is_slot,
+
+    input  [ 4:0] int_num,
+    input  [31:0] bad_vaddr,
+    output [31:0] EPC,
+
+    output        int_happen,
+    output [  :0] exc_eret_op
+);
+wire [31:0] cp0_addr_d;
+decoder_5_32 u_dec2(.in(cp0_addr), .out(cp0_addr_d));
+
+assign cp0_rdata = {32{`BADVADDR_NUM}} & cp0_badvaddr
+                 | {32{`STATUS_NUM}}   & cp0_status
+                 | {32{`COUNT_NUM}}    & cp0_count
+                 | {32{`COMPARE_NUM}}  & cp0_compare
+                 | {32{`CAUSE_NUM}}    & cp0_cause
+                 | {32{`EPC_NUM}}      & cp0_epc;
+
+wire int, adel, ades, sys, bp, ri, ov, eret;
+wire any_exc;
+wire [4:0] exccode;
+assign {int, adel, ades, sys, bp, ri, ov, eret} = exc_eret_type;
+assign any_exc = |exc_eret_type[7:1];
+assign exccode = {5{int}}  & 5'h00
+               | {5{adel}} & 5'h04
+               | {5{ades}} & 5'h05
+               | {5{sys}}  & 5'h08
+               | {5{bp}}   & 5'h09
+               | {5{ri}}   & 5'h0a
+               | {5{ov}}   & 5'h0c;
+
+wire [31:0] cp0_status;
+assign cp0_status = {9'h0, cp0_status_bev, 6'h0, cp0_status_im, 6'h0, cp0_status_exl, cp0_status_ie}
+
+reg cp0_status_bev;
+always @(posedge clk)
+	if(rst)
+		cp0_status_bev <= 1'b1;
+
+reg [7:0] cp0_status_im;
+always @(posedge clk)
+	if(cp0_wen && cp0_addr_d[`STATUS_NUM])
+		cp0_status_im <= cp0_wdata[15:8];
+
+reg cp0_status_exl;
+wire cp0_status_exl_set, cp0_status_exl_clear;
+assign cp0_status_exl_set = any_exc;
+assign cp0_status_exl_clear = eret;
+always @(posedge clk)
+	if(rst)
+		cp0_status_exl <= 1'b0;
+	else if(cp0_status_exl_set)
+		cp0_status_exl <= 1'b1;
+	else if(cp0_status_exl_clear)
+		cp0_status_exl <= 1'b0;
+	else if(cp0_wen && cp0_addr_d[`STATUS_NUM])
+		cp0_status_exl <= cp0_wdata[1];
+
+reg cp0_status_ie;
+always @(posedge clk)
+	if(rst)
+		cp0_status_ie <= 1'b0;
+	else if(cp0_wen && cp0_addr_d[`STATUS_NUM])
+		cp0_status_ie <= cp0_wdata[0];
+
+wire [31:0] cp0_cause;
+assign cp0_cause = {cp0_cause_bd, cp0_cause_ti, 14'h0, cp0_cause_ip, 1'h0, cp0_cause_exccode, 2'h0};
+
+reg cp0_cause_bd;
+wire cp0_cause_bd_wen;
+assign cp0_cause_bd_wen = any_exc && !cp0_status_exl;
+always @(posedge clk)
+	if(rst)
+		cp0_cause_bd <= 1'b0;
+	else if(cp0_cause_bd_wen)
+		cp0_cause_bd <= is_slot;
+
+reg cp0_cause_ti;
+wire cp0_cause_ti_set, cp0_cause_ti_clear;
+assign cp0_cause_ti_set = cp0_count==cp0_compare;
+assign cp0_cause_ti_clear = cp0_wen && cp0_addr_d[`COMPARE_NUM];
+always @(posedge clk)
+	if(rst)
+		cp0_cause_ti <= 1'b0;
+	else if(cp0_cause_ti_clear)
+		cp0_cause_ti <= 1'b0;
+	else if(cp0_cause_ti_set)
+		cp0_cause_ti <= 1'b1;
+
+reg [7:0] cp0_cause_ip;
+always @(posedge clk)
+	if(rst)
+		cp0_cause_ip[7:2] <= 6'b0;
+	else
+		cp0_cause_ip[7:2] <= {int_num[5]|cp0_cause_ti, int_num[4:0]};
+always @(posedge clk)
+	if(rst)
+		cp0_cause_ip[1:0] <= 2'b0;
+	else if(cp0_wen && cp0_addr_d[`CAUSE_NUM])
+		cp0_cause_ip[1:0] <= cp0_wdata[9:8];
+
+reg [4:0] cp0_cause_exccode;
+wire cp0_cause_exccode_wen;
+assign cp0_cause_exccode_wen = any_exc;
+always @(posedge clk)
+	if(rst)
+		cp0_cause_exccode <= 1'b0;
+	else if(cp0_cause_exccode_wen)
+		cp0_cause_exccode <= exccode;
+
+reg [31:0] cp0_epc;
+wire cp0_epc_wen;
+assign cp0_epc_wen = any_exc && !cp0_status_exl;
+always @(posedge clk)
+	if(cp0_epc_wen)
+		cp0_epc <= is_slot? PC - 3'h4 : PC;
+	else if(cp0_wen && cp0_addr_d[`EPC_NUM])
+		cp0_epc <= cp0_wdata;
+
+reg [31:0] cp0_badvaddr;
+wire cp0_badvaddr_wen;
+assign cp0_badvaddr_wen = adel;
+always @(posedge clk)
+	if(cp0_badvaddr_wen)
+		cp0_badvaddr <= bad_vaddr;
+
+reg tick;
+reg [31:0] cp0_count;
+always @(posedge clk)
+	if(rst) tick <= 1'b0;
+	else    tick <= ~tick;
+always @(poedge clk)
+	if(cp0_wen && cp0_addr_d[`COUNT_CUM])
+		cp0_count <= cp0_count + 1'b1;
+
+reg [31:0] cp0_compare;
+always @(poesdge clk)
+	if(cp0_wen && cp0_addr_d[`COMPARE_NUM])
+		cp0_compare <= cp0_wdata;
+
+
+
+
+
+
+
+
