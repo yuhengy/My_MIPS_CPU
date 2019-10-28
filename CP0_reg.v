@@ -52,12 +52,12 @@ reg  [31:0] cp0_compare;
 //soft access
 decoder_5_32 u_dec2(.in(cp0_addr[7:3]), .out(cp0_addr_d));
 
-assign cp0_rdata = {32{`BADVADDR_NUM}} & cp0_badvaddr
-                 | {32{`STATUS_NUM}}   & cp0_status
-                 | {32{`COUNT_NUM}}    & cp0_count
-                 | {32{`COMPARE_NUM}}  & cp0_compare
-                 | {32{`CAUSE_NUM}}    & cp0_cause
-                 | {32{`EPC_NUM}}      & cp0_epc;
+assign cp0_rdata = {32{cp0_addr_d[`BADVADDR_NUM]}} & cp0_badvaddr
+                 | {32{cp0_addr_d[`STATUS_NUM]}}   & cp0_status
+                 | {32{cp0_addr_d[`COUNT_NUM]}}    & cp0_count
+                 | {32{cp0_addr_d[`COMPARE_NUM]}}  & cp0_compare
+                 | {32{cp0_addr_d[`CAUSE_NUM]}}    & cp0_cause
+                 | {32{cp0_addr_d[`EPC_NUM]}}      & cp0_epc;
 
 //exc int info
 assign {int, adel, ades, sys, bp, ri, ov} = exc_eret_type;
@@ -71,7 +71,7 @@ assign exccode = {5{int}}  & 5'h00
                | {5{ov}}   & 5'h0c;
 
 assign int_happen = !cp0_status_exl && cp0_status_ie
-                 && (|(cp0_status_im && cp0_cause_ip));
+                 && (|(cp0_status_im & cp0_cause_ip));
 
 //cp0 regs
 	//status
@@ -169,9 +169,4 @@ always @(poesdge clk)
 		cp0_compare <= cp0_wdata;
 
 
-
-
-
-
-
-
+endmodule;
