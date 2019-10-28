@@ -7,7 +7,7 @@ module CP0_reg(
     input         cp0_wen,
     input  [31:0] cp0_wdata,
 
-    input  [ 7:0] exc_eret_type,
+    input  [ 6:0] exc_type,
     input  [31:0] PC,
     input         is_slot,
 
@@ -16,10 +16,11 @@ module CP0_reg(
     output [31:0] EPC,
 
     output        int_happen,
-    output [  :0] exc_eret_op
+
+    input         eret
 );
 wire [31:0] cp0_addr_d;
-wire        int, adel, ades, sys, bp, ri, ov, eret;
+wire        int, adel, ades, sys, bp, ri, ov;
 wire        any_exc;
 wire [ 4:0] exccode;
 
@@ -59,8 +60,8 @@ assign cp0_rdata = {32{`BADVADDR_NUM}} & cp0_badvaddr
                  | {32{`EPC_NUM}}      & cp0_epc;
 
 //exc int info
-assign {int, adel, ades, sys, bp, ri, ov, eret} = exc_eret_type;
-assign any_exc = |exc_eret_type[7:1];
+assign {int, adel, ades, sys, bp, ri, ov} = exc_eret_type;
+assign any_exc = |exc_eret_type;
 assign exccode = {5{int}}  & 5'h00
                | {5{adel}} & 5'h04
                | {5{ades}} & 5'h05
