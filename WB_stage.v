@@ -24,11 +24,18 @@ reg         ws_valid;
 wire        ws_ready_go;
 
 reg [`MS_TO_WS_BUS_WD -1:0] ms_to_ws_bus_r;
+
+wire        ws_cp0_wen     ;
+wire        ws_res_from_cp0;
+wire [ 7:0] ws_cp0_addr    ;
 wire [ 3:0] ws_gr_we       ;
 wire [ 4:0] ws_dest        ;
 wire [31:0] ws_final_result;
 wire [31:0] ws_pc          ;
-assign {ws_gr_we       ,  //72:69
+assign {ws_cp0_wen     ,  //82:82
+        ws_res_from_cp0,  //81:81
+        ws_cp0_addr    ,  //80:73
+        ws_gr_we       ,  //72:69
         ws_dest        ,  //68:64
         ws_final_result,  //63:32
         ws_pc             //31:0

@@ -23,6 +23,10 @@ reg         ms_valid;
 wire        ms_ready_go;
 
 reg [`ES_TO_MS_BUS_WD -1:0] es_to_ms_bus_r;
+
+wire        ms_cp0_wen     ;
+wire        ms_res_from_cp0;
+wire [ 7:0] ms_cp0_addr    ;
 wire        ms_res_from_mem;
 wire [ 6:0] ms_inst_load   ;
 wire [ 3:0] ms_ld_rshift_op;
@@ -32,7 +36,10 @@ wire [ 3:0] ms_gr_we       ;
 wire [ 4:0] ms_dest        ;
 wire [31:0] ms_alu_result  ;
 wire [31:0] ms_pc          ;
-assign {ms_res_from_mem,  //82:82
+assign {ms_cp0_wen     ,  //92:92
+        ms_res_from_cp0,  //91:91
+        ms_cp0_addr    ,  //90:83
+        ms_res_from_mem,  //82:82
         ms_inst_load   ,  //81:75
         ms_ld_extd_op  ,  //74:70
         ms_gr_we_1     ,  //69:69
@@ -44,7 +51,10 @@ assign {ms_res_from_mem,  //82:82
 wire [31:0] mem_result;
 wire [31:0] ms_final_result;
 
-assign ms_to_ws_bus = {ms_gr_we       ,  //72:69
+assign ms_to_ws_bus = {ms_cp0_wen     ,  //82:82
+                       ms_res_from_cp0,  //81:81
+                       ms_cp0_addr    ,  //80:73
+                       ms_gr_we       ,  //72:69
                        ms_dest        ,  //68:64
                        ms_final_result,  //63:32
                        ms_pc             //31:0

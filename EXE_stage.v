@@ -26,6 +26,10 @@ reg         es_valid      ;
 wire        es_ready_go   ;
 
 reg  [`DS_TO_ES_BUS_WD -1:0] ds_to_es_bus_r;
+
+wire        es_cp0_wen    ;
+wire        es_res_from_cp0;
+wire [ 7:0] es_cp0_addr   ;
 wire        es_hl_from_rs ;
 wire [ 6:0] es_inst_load  ;
 wire [ 4:0] es_inst_store ;
@@ -39,6 +43,7 @@ wire        es_src1_is_sa ;
 wire        es_src1_is_pc ;
 wire        es_src1_is_hi ;
 wire        es_src1_is_lo ;
+wire        es_src1_is_0  ;
 wire        es_src2_is_imm;
 wire        es_src2_is_uimm; 
 wire        es_src2_is_8  ;
@@ -51,18 +56,22 @@ wire [15:0] es_imm        ;
 wire [31:0] es_rs_value   ;
 wire [31:0] es_rt_value   ;
 wire [31:0] es_pc         ;
-assign {es_hl_from_rs  ,  //161:161
-        es_inst_load   ,  //160:154
-        es_inst_store  ,  //153:149
-        es_alu_op      ,  //148:137
-        es_mul_op      ,  //136:135
-        es_div_op      ,  //134:133
-        es_load_op     ,  //132:132
-        es_ld_extd_op  ,  //131:127
-        es_src1_is_sa  ,  //126:126
-        es_src1_is_pc  ,  //125:125
-        es_src1_is_hi  ,  //124:124
-        es_src1_is_lo  ,  //123:123
+assign {es_cp0_wen     ,  //172:172
+        es_res_from_cp0,  //171:171
+        es_cp0_addr    ,  //170:163
+        es_hl_from_rs  ,  //162:162
+        es_inst_load   ,  //161:155
+        es_inst_store  ,  //154:150
+        es_alu_op      ,  //149:138
+        es_mul_op      ,  //137:136
+        es_div_op      ,  //135:134
+        es_load_op     ,  //133:133
+        es_ld_extd_op  ,  //132:128
+        es_src1_is_sa  ,  //127:127
+        es_src1_is_pc  ,  //126:126
+        es_src1_is_hi  ,  //125:125
+        es_src1_is_lo  ,  //124:124
+        es_src1_is_0   ,  //123:123
         es_src2_is_imm ,  //122:122
         es_src2_is_uimm,  //121:121
         es_src2_is_8   ,  //120:120
@@ -102,7 +111,10 @@ assign es_res_from_mem = es_load_op;
 assign es_res_from_mul = es_mul_op[0] | es_mul_op[1];
 assign es_res_from_div = es_div_op[0] | es_div_op[1];
 
-assign es_to_ms_bus = {es_res_from_mem,  //82:82
+assign es_to_ms_bus = {es_cp0_wen     ,  //92:92
+                       es_res_from_cp0,  //91:91
+                       es_cp0_addr    ,  //90:83
+                       es_res_from_mem,  //82:82
                        es_inst_load   ,  //81:75
                        es_ld_extd_op  ,  //74:70
                        es_gr_we       ,  //69:69
@@ -135,6 +147,7 @@ assign es_alu_src1 = es_src1_is_sa  ? {27'b0, es_imm[10:6]} :
                      es_src1_is_pc  ? es_pc[31:0] :
                      es_src1_is_hi  ? hi :
                      es_src1_is_lo  ? lo :
+                     es_src1_is_0   ? 32'b0 :
                                       es_rs_value;
 assign es_alu_src2 = es_src2_is_imm ? {{16{es_imm[15]}}, es_imm[15:0]} :
                      es_src2_is_uimm? { 16'h0          , es_imm[15:0]} :
