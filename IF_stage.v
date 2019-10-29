@@ -77,7 +77,7 @@ always @(posedge clk) begin
     end
 end
 
-assign inst_sram_en    = to_fs_valid && fs_allowin;
+assign inst_sram_en    = to_fs_valid && fs_allowin || flush;
 assign inst_sram_wen   = 4'h0;
 assign inst_sram_addr  = nextpc;
 assign inst_sram_wdata = 32'b0;
