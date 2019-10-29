@@ -144,6 +144,7 @@ always @(posedge clk)
 
 	//epc
 assign cp0_epc_wen = any_exc && !cp0_status_exl;
+assign EPC = cp0_epc;
 always @(posedge clk)
 	if(cp0_epc_wen)
 		cp0_epc <= is_slot? PC - 3'h4 : PC;
