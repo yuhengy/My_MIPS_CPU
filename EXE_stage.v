@@ -188,6 +188,7 @@ multiplier u_multiplier(
 divider u_divider(
     .clk            (clk                ),
     .rst            (reset              ),
+    .flush          (flush              ),
     .div_op         (es_div_op          ),
     .divisor        (es_rt_value        ),
     .dividend       (es_rs_value        ),

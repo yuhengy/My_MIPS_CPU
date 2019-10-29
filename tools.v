@@ -62,6 +62,7 @@ endmodule
 module divider(
     input         clk,
     input         rst,
+    input         flush,
 
     input  [ 1:0] div_op,
     input  [31:0] divisor,
@@ -106,6 +107,8 @@ assign  div_in_valid_w  = div_in_valid_r || div_in_valid && !div_busy_w;
 
 always @(posedge clk)
     if(rst)
+        div_busy_r <= 1'h0;
+    else if(flush)
         div_busy_r <= 1'h0;
     else if(div_in_valid)
         div_busy_r <= 1'h1;
