@@ -87,6 +87,8 @@ assign rf_we    = ws_gr_we & {4{ws_valid}};
 assign rf_waddr = ws_dest;
 assign rf_wdata = ws_final_result;
 
+wire [6:0] cp0_exc_type;
+
 assign ws_exc_type[0] = 0;
 assign ws_exc_type[1] = 0;
 assign ws_exc_type[2] = 0;
@@ -95,25 +97,27 @@ assign ws_exc_type[4] = 0;
 assign ws_exc_type[5] = 0;
 assign ws_exc_type[6] = 0;
 
+assign cp0_exc_type = {6{ws_valid}} & ws_exc_type;
+
 CP0_reg u_CP0_reg(
     .clk            
     .rst
 
-    .cp0_addr   (ws_cp0_addr    ),
-    .cp0_wen    (ws_cp0_wen     ),
-    .cp0_wdata  (ws_final_result),
+    .cp0_addr   (ws_cp0_addr                ),
+    .cp0_wen    (ws_valid && ws_cp0_wen     ),
+    .cp0_wdata  (ws_final_result            ),
 
-    .cp0_rdata  (ws_cp0_rdata   ),
+    .cp0_rdata  (ws_cp0_rdata               ),
 
-    .exc_type   (ws_exc_type    ),
-    .PC         (ws_pc          ),
-    .is_slot    (ws_bd          ),
-    .int_num    (0              ),
-    .bad_vaddr  (0              ),
+    .exc_type   (cp0_exc_type               ),
+    .PC         (ws_pc                      ),
+    .is_slot    (ws_bd                      ),
+    .int_num    (0                          ),
+    .bad_vaddr  (0                          ),
 
-    .EPC        (ws_cp0_epc     ),
-    .int_happen (               ),
-    .eret       (ws_eret_flush  )
+    .EPC        (ws_cp0_epc                 ),
+    .int_happen (                           ),
+    .eret       (ws_valid && ws_eret_flush  )
 );
 
 // debug info generate

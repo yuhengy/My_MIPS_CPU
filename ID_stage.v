@@ -473,7 +473,7 @@ br_comp u_br_comp(
     .br_happen  (br_happen  )
 );
 
-assign br_bd    = |br_op || inst_j || inst_jal || inst_jr || inst_jalr;
+assign br_bd    = ds_valid && (|br_op || inst_j || inst_jal || inst_jr || inst_jalr);
 assign br_taken = (   br_happen
                    || inst_j
                    || inst_jal
