@@ -127,7 +127,7 @@ CP0_reg u_CP0_reg(
     .int_happen (                           ),
     .eret       (ws_valid && ws_eret_flush  )
 );
-assign send_flush = ws_valid && ws_eret_flush;
+assign send_flush = ws_valid && (ws_eret_flush || ws_exc_sys);
 assign ws_final_result = ws_res_from_cp0? ws_cp0_rdata:
                                           ws_mem_alu_result;
 
