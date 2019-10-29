@@ -8,6 +8,8 @@ module if_stage(
     input                          ds_allowin     ,
     //brbus
     input  [`BR_BUS_WD       -1:0] br_bus         ,
+    //exceretbus
+    input  [`EXC_ERET_BUS_WD -1:0] exc_eret_bus   ,
     //to ds
     output                         fs_to_ds_valid ,
     output [`FS_TO_DS_BUS_WD -1:0] fs_to_ds_bus   ,
@@ -27,19 +29,30 @@ wire        to_fs_valid;
 wire [31:0] seq_pc;
 wire [31:0] nextpc;
 
+wire         fs_bd;
 wire         br_taken;
 wire [ 31:0] br_target;
-assign {br_taken,br_target} = br_bus;
+assign {fs_bd, br_taken,br_target} = br_bus;
 
 wire [31:0] fs_inst;
 reg  [31:0] fs_pc;
-assign fs_to_ds_bus = {fs_inst ,
+assign fs_to_ds_bus = {fs_bd   ,
+                       fs_inst ,
                        fs_pc   };
+
+//exc eret bus
+wire         nextpc_is_exc;
+wire         nextpc_is_epc;
+wire [31:0]  epc;
+assign {nextpc_is_exc, nextpc_is_epc, epc} = exc_eret_bus;
 
 // pre-IF stage
 assign to_fs_valid  = ~reset;
 assign seq_pc       = fs_pc + 3'h4;
-assign nextpc       = br_taken ? br_target : seq_pc; 
+assign nextpc       = nextpc_is_exc? 32'hbfc00380:
+                      nextpc_is_epc? epc         :
+                      br_taken     ? br_target   : 
+                                     seq_pc      ; 
 
 // IF stage
 assign fs_ready_go    = 1'b1;
