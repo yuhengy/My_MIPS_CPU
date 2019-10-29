@@ -25,7 +25,7 @@ wire        any_exc;
 wire [ 4:0] exccode;
 
 wire [31:0] cp0_status;
-reg         cp0_status_bev;
+wire        cp0_status_bev;
 reg  [ 7:0] cp0_status_im;
 reg         cp0_status_exl;
 wire        cp0_status_exl_set, cp0_status_exl_clear;
@@ -77,17 +77,16 @@ assign int_happen = !cp0_status_exl && cp0_status_ie
 	//status
 assign cp0_status = {9'h0, cp0_status_bev, 6'h0, cp0_status_im, 6'h0, cp0_status_exl, cp0_status_ie}
 
-always @(posedge clk)
-	if(rst)
-		cp0_status_bev <= 1'b1;
+assign cp0_status_bev = 1'b1;
 
-always @(posedge clk)
+always @(posedge clk) begin
 	if(cp0_wen && cp0_addr_d[`STATUS_NUM] && cp0_addr[2:0]==3'h0)
 		cp0_status_im  <= cp0_wdata[15:8];
+end
 
 assign cp0_status_exl_set = any_exc;
 assign cp0_status_exl_clear = eret;
-always @(posedge clk)
+always @(posedge clk) begin
 	if(rst)
 		cp0_status_exl <= 1'b0;
 	else if(cp0_status_exl_set)
@@ -96,6 +95,7 @@ always @(posedge clk)
 		cp0_status_exl <= 1'b0;
 	else if(cp0_wen && cp0_addr_d[`STATUS_NUM] && cp0_addr[2:0]==3'h0)
 		cp0_status_exl <= cp0_wdata[1];
+end
 
 always @(posedge clk)
 	if(rst)

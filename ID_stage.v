@@ -196,6 +196,7 @@ wire        inst_mtlo;
 wire        inst_eret;
 wire        inst_mfc0;
 wire        inst_mtc0;
+wire        inst_syscall;
 
 wire        dst_is_r31;  
 wire        dst_is_rt;   
@@ -335,6 +336,7 @@ assign inst_mtlo   = op_d[6'h00] & func_d[6'h13] & rt_d[5'h00] & rd_d[5'h00] & s
 assign inst_eret   = op_d[6'h10] & func_d[6'h18] & rs_d[5'h10] & rt_d[5'h00] & rd_d[5'h00] & sa_d[5'h00];
 assign inst_mfc0   = op_d[6'h10] & rs_d[5'h00]   & sa_d[5'h00] & (func[5:3] == 3'h0);
 assign inst_mtc0   = op_d[6'h10] & rs_d[5'h04]   & sa_d[5'h00] & (func[5:3] == 3'h0);
+assign inst_syscall= op_d[6'h00] & func_d[6'h0c];
 
 assign alu_op[ 0] = inst_add | inst_addi | inst_addu | inst_addiu
                   | load_op  | store_op  | inst_jal  | inst_jalr | inst_bgezal | inst_bltzal;
