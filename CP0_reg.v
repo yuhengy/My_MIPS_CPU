@@ -8,7 +8,7 @@ module CP0_reg(
     input         cp0_wen,
     input  [31:0] cp0_wdata,
 
-    input  [ 6:0] exc_type,
+    input  [ 7:0] exc_type,
     input  [31:0] PC,
     input         is_slot,
 
@@ -21,7 +21,7 @@ module CP0_reg(
     input         eret
 );
 wire [31:0] cp0_addr_d;
-wire        int, adel, ades, sys, bp, ri, ov;
+wire        int, rine, rdae, ades, sys, bp, ri, ov;
 wire        any_exc;
 wire [ 4:0] exccode;
 
@@ -61,15 +61,16 @@ assign cp0_rdata = {32{cp0_addr_d[`BADVADDR_NUM]}} & cp0_badvaddr
                  | {32{cp0_addr_d[`EPC_NUM]}}      & cp0_epc;
 
 //exc int info
-assign {int, adel, ades, sys, bp, ri, ov} = exc_type;
+assign {int, rine, rdae, ades, sys, bp, ri, ov} = exc_type;
 assign any_exc = |exc_type;
-assign exccode = {5{int}}  & 5'h00
-               | {5{adel}} & 5'h04
-               | {5{ades}} & 5'h05
-               | {5{sys}}  & 5'h08
-               | {5{bp}}   & 5'h09
-               | {5{ri}}   & 5'h0a
-               | {5{ov}}   & 5'h0c;
+assign exccode = int  ? 5'h00 :
+                 rine ? 5'h04 :
+                 ri   ? 5'h0a :
+                 sys  ? 5'h08 :
+                 bp   ? 5'h09 :
+                 ov   ? 5'h0c :
+                 rdae ? 5'h04 :
+                 ades ? 5'h05 ;
 
 assign int_happen = !cp0_status_exl && cp0_status_ie
                  && (|(cp0_status_im & cp0_cause_ip));

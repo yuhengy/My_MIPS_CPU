@@ -63,7 +63,7 @@ assign ws_to_rf_bus = {rf_we   ,  //40:37
                       };
 
 wire [31:0] ws_cp0_rdata;
-wire [ 6:0] ws_exc_type;
+wire [ 7:0] ws_exc_type;
 wire [31:0] ws_cp0_epc;
 
 assign stall_ws_bus = {ws_valid && (|ws_gr_we), {4{ws_valid}} & ws_gr_we,
@@ -95,7 +95,7 @@ assign rf_we    = ws_gr_we & {4{ws_valid}};
 assign rf_waddr = ws_dest;
 assign rf_wdata = ws_final_result;
 
-wire [6:0] cp0_exc_type;
+wire [7:0] cp0_exc_type;
 
 assign ws_exc_type[0] = 0;
 assign ws_exc_type[1] = 0;
@@ -104,6 +104,7 @@ assign ws_exc_type[3] = ws_exc_sys;
 assign ws_exc_type[4] = 0;
 assign ws_exc_type[5] = 0;
 assign ws_exc_type[6] = 0;
+assign ws_exc_type[7] = 0;
 
 assign cp0_exc_type = {6{ws_valid}} & ws_exc_type;
 
