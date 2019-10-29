@@ -3,6 +3,7 @@
 module mem_stage(
     input                          clk           ,
     input                          reset         ,
+    input                          flush         ,
     //allowin
     input                          ws_allowin    ,
     output                         ms_allowin    ,
@@ -73,6 +74,9 @@ assign ms_allowin     = !ms_valid || ms_ready_go && ws_allowin;
 assign ms_to_ws_valid = ms_valid && ms_ready_go;
 always @(posedge clk) begin
     if (reset) begin
+        ms_valid <= 1'b0;
+    end
+    else if (flush) begin
         ms_valid <= 1'b0;
     end
     else if (ms_allowin) begin

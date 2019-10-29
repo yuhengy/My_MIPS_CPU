@@ -3,6 +3,7 @@
 module id_stage(
     input                          clk           ,
     input                          reset         ,
+    input                          flush         ,
     //allowin
     input                          es_allowin    ,
     output                         ds_allowin    ,
@@ -242,6 +243,9 @@ assign ds_allowin     = !ds_valid || ds_ready_go && es_allowin;
 assign ds_to_es_valid = ds_valid && ds_ready_go;
 always @(posedge clk) begin
     if (reset) begin
+        ds_valid <= 1'b0;
+    end
+    else if (flush) begin
         ds_valid <= 1'b0;
     end
     else if (ds_allowin) begin

@@ -3,6 +3,7 @@
 module wb_stage(
     input                           clk           ,
     input                           reset         ,
+    input                           flush         ,
     //allowin
     output                          ws_allowin    ,
     //from ms
@@ -13,6 +14,7 @@ module wb_stage(
     //ws to id stall
     output [`STALL_BUS_WD    -1:0]  stall_ws_bus  ,
     output [`FORWARD_BUS_WD  -1:0]  forward_ws_bus,
+    output                          send_flush,
     //trace debug interface
     output [31:0] debug_wb_pc     ,
     output [ 3:0] debug_wb_rf_wen ,
@@ -62,6 +64,9 @@ assign ws_ready_go = 1'b1;
 assign ws_allowin  = !ws_valid || ws_ready_go;
 always @(posedge clk) begin
     if (reset) begin
+        ws_valid <= 1'b0;
+    end
+    else if (flush) begin
         ws_valid <= 1'b0;
     end
     else if (ws_allowin) begin

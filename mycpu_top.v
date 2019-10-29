@@ -22,6 +22,7 @@ module mycpu_top(
 reg         reset;
 always @(posedge clk) reset <= ~resetn;
 
+wire         flush;
 wire         ds_allowin;
 wire         es_allowin;
 wire         ms_allowin;
@@ -47,6 +48,7 @@ wire [`FORWARD_BUS_WD  -1:0] forward_ws_bus;
 if_stage if_stage(
     .clk            (clk            ),
     .reset          (reset          ),
+    .flush          (flush          ),
     //allowin
     .ds_allowin     (ds_allowin     ),
     //brbus
@@ -65,6 +67,7 @@ if_stage if_stage(
 id_stage id_stage(
     .clk            (clk            ),
     .reset          (reset          ),
+    .flush          (flush          ),
     //allowin
     .es_allowin     (es_allowin     ),
     .ds_allowin     (ds_allowin     ),
@@ -90,6 +93,7 @@ id_stage id_stage(
 exe_stage exe_stage(
     .clk            (clk            ),
     .reset          (reset          ),
+    .flush          (flush          ),
     //allowin
     .ms_allowin     (ms_allowin     ),
     .es_allowin     (es_allowin     ),
@@ -112,6 +116,7 @@ exe_stage exe_stage(
 mem_stage mem_stage(
     .clk            (clk            ),
     .reset          (reset          ),
+    .flush          (flush          ),
     //allowin
     .ws_allowin     (ws_allowin     ),
     .ms_allowin     (ms_allowin     ),
@@ -131,6 +136,7 @@ mem_stage mem_stage(
 wb_stage wb_stage(
     .clk            (clk            ),
     .reset          (reset          ),
+    .flush          (flush          ),
     //allowin
     .ws_allowin     (ws_allowin     ),
     //from ms
@@ -141,6 +147,7 @@ wb_stage wb_stage(
     //ws to id stall
     .stall_ws_bus   (stall_ws_bus   ),
     .forward_ws_bus (forward_ws_bus ),
+    .send_flush     (flush          ),
     //trace debug interface
     .debug_wb_pc      (debug_wb_pc      ),
     .debug_wb_rf_wen  (debug_wb_rf_wen  ),
