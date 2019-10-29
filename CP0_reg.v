@@ -12,7 +12,7 @@ module CP0_reg(
     input  [31:0] PC,
     input         is_slot,
 
-    input  [ 4:0] int_num,
+    input  [ 5:0] int_num,
     input  [31:0] bad_vaddr,
     output [31:0] EPC,
 
