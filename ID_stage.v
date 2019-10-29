@@ -386,6 +386,7 @@ assign src1_is_sa   = inst_sll   | inst_srl   | inst_sra;
 assign src1_is_pc   = inst_jal   | inst_jalr  | inst_bgezal| inst_bltzal;
 assign src1_is_hi   = inst_mfhi;
 assign src1_is_lo   = inst_mflo;
+assign src1_is_0    = inst_mtc0;
 assign src2_is_imm  = inst_addi  | inst_addiu | inst_slti  | inst_sltiu
                     | inst_lui   | load_op    | store_op;
 assign src2_is_uimm = inst_andi  | inst_ori   | inst_xori;
