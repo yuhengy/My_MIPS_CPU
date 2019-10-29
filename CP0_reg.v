@@ -171,4 +171,4 @@ always @(posedge clk)
 		cp0_compare <= cp0_wdata;
 
 
-endmodule;
+endmodule
