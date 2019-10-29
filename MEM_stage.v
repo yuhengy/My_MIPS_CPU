@@ -80,7 +80,7 @@ assign forward_ms_bus = {ms_valid && !es_res_from_cp0,
 wire ms_exc;
 
 assign ms_exc = ms_exc_sys;
-assign ms_exc_eret_bus = {ms_exc, ms_eret_flush};
+assign ms_exc_eret_bus = {2{ms_valid}} & {ms_exc, ms_eret_flush};
 
 assign ms_ready_go    = 1'b1;
 assign ms_allowin     = !ms_valid || ms_ready_go && ws_allowin;
