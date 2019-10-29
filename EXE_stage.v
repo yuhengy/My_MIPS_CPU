@@ -3,6 +3,7 @@
 module exe_stage(
     input                          clk           ,
     input                          reset         ,
+    input                          flush         ,
     //allowin
     input                          ms_allowin    ,
     output                         es_allowin    ,
@@ -136,6 +137,9 @@ assign es_allowin     = !es_valid || es_ready_go && ms_allowin;
 assign es_to_ms_valid =  es_valid && es_ready_go;
 always @(posedge clk) begin
     if (reset) begin
+        es_valid <= 1'b0;
+    end
+    else if (flush) begin
         es_valid <= 1'b0;
     end
     else if (es_allowin) begin

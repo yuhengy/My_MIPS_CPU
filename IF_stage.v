@@ -3,6 +3,7 @@
 module if_stage(
     input                          clk            ,
     input                          reset          ,
+    input                          flush          ,
     //allwoin
     input                          ds_allowin     ,
     //brbus
@@ -48,6 +49,9 @@ always @(posedge clk) begin
     if (reset) begin
         fs_valid <= 1'b0;
     end
+    else if (flush) begin
+        fs_valid <= 1'b1;
+    end
     else if (fs_allowin) begin
         fs_valid <= to_fs_valid;
     end
@@ -55,7 +59,7 @@ always @(posedge clk) begin
     if (reset) begin
         fs_pc <= 32'hbfbffffc;  //trick: to make nextpc be 0xbfc00000 during reset 
     end
-    else if (to_fs_valid && fs_allowin) begin
+    else if (to_fs_valid && fs_allowin || flush) begin
         fs_pc <= nextpc;
     end
 end
