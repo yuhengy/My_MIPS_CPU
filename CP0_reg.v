@@ -60,8 +60,8 @@ assign cp0_rdata = {32{cp0_addr_d[`BADVADDR_NUM]}} & cp0_badvaddr
                  | {32{cp0_addr_d[`EPC_NUM]}}      & cp0_epc;
 
 //exc int info
-assign {int, adel, ades, sys, bp, ri, ov} = exc_eret_type;
-assign any_exc = |exc_eret_type;
+assign {int, adel, ades, sys, bp, ri, ov} = exc_type;
+assign any_exc = |exc_type;
 assign exccode = {5{int}}  & 5'h00
                | {5{adel}} & 5'h04
                | {5{ades}} & 5'h05

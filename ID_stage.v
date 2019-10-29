@@ -89,6 +89,7 @@ wire [31:0] br_target;
 wire        br_happen;  // br_taken component for Branch (excluding Jump)
 wire [ 5:0] br_op;
 
+wire        exc_sys;
 wire        eret_flush;
 wire        cp0_wen;
 wire        res_from_cp0;
@@ -209,7 +210,8 @@ wire [31:0] rf_rdata2;
 
 assign br_bus       = {br_taken,br_target};
 
-assign ds_to_es_bus = {eret_flush  ,  //173:173
+assign ds_to_es_bus = {exc_sys     ,  //174:174
+                       eret_flush  ,  //173:173
                        cp0_wen     ,  //172:172
                        res_from_cp0,  //171:171
                        cp0_addr    ,  //170:163
@@ -386,7 +388,7 @@ assign dst_is_rt    = inst_addi  | inst_addiu | inst_slti  | inst_sltiu
                     | inst_mfc0;
 assign gr_we        = ~inst_beq & ~inst_bne & ~inst_bgez & ~inst_bgtz & ~inst_blez & ~inst_bltz
                     & ~store_op & ~inst_j   & ~inst_jr   & ~inst_mthi & ~inst_mtlo
-                    & ~inst_mtc0& ~inst_eret;
+                    & ~inst_mtc0& ~inst_eret& ~inst_syscall;
 assign ds_hi_we     = inst_mult  | inst_multu | inst_div   | inst_divu  | inst_mthi;
 assign ds_lo_we     = inst_mult  | inst_multu | inst_div   | inst_divu  | inst_mtlo;
 assign hl_from_rs   = inst_mthi  | inst_mtlo;
@@ -394,6 +396,7 @@ assign hl_from_rs   = inst_mthi  | inst_mtlo;
 assign res_from_cp0 = inst_mfc0;
 assign cp0_wen      = inst_mtc0;
 assign eret_flush   = inst_eret;
+assign exc_sys      = inst_syscall;
 
 
 assign dest         = dst_is_r31 ? 5'd31 :

@@ -27,6 +27,7 @@ wire        ws_ready_go;
 
 reg [`MS_TO_WS_BUS_WD -1:0] ms_to_ws_bus_r;
 
+wire        ws_exc_sys     ;
 wire        ws_eret_flush  ;
 wire        ws_cp0_wen     ;
 wire        ws_res_from_cp0;
@@ -35,7 +36,8 @@ wire [ 3:0] ws_gr_we       ;
 wire [ 4:0] ws_dest        ;
 wire [31:0] ws_final_result;
 wire [31:0] ws_pc          ;
-assign {ws_eret_flush  ,  //83:83
+assign {ws_exc_sys     ,  //84:84
+        ws_eret_flush  ,  //83:83
         ws_cp0_wen     ,  //82:82
         ws_res_from_cp0,  //81:81
         ws_cp0_addr    ,  //80:73
@@ -54,6 +56,7 @@ assign ws_to_rf_bus = {rf_we   ,  //40:37
                       };
 
 wire [31:0] ws_cp0_rdata;
+wire [ 6:0] ws_exc_type;
 
 assign stall_ws_bus = {ws_valid && (|ws_gr_we), {4{ws_valid}} & ws_gr_we,
                        ws_dest};
@@ -81,6 +84,14 @@ assign rf_we    = ws_gr_we & {4{ws_valid}};
 assign rf_waddr = ws_dest;
 assign rf_wdata = ws_final_result;
 
+assign ws_exc_type[0] = 0;
+assign ws_exc_type[1] = 0;
+assign ws_exc_type[2] = 0;
+assign ws_exc_type[3] = ws_exc_sys;
+assign ws_exc_type[4] = 0;
+assign ws_exc_type[5] = 0;
+assign ws_exc_type[6] = 0;
+
 CP0_reg u_CP0_reg(
     .clk            
     .rst
@@ -91,7 +102,7 @@ CP0_reg u_CP0_reg(
 
     .cp0_rdata  (ws_cp0_rdata   ),
 
-    .exc_type   (0              ),
+    .exc_type   (ws_exc_type    ),
     .PC         (ws_pc          ),
     .is_slot    (0              ),
     .int_num    (0              ),

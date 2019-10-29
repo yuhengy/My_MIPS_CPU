@@ -25,6 +25,7 @@ wire        ms_ready_go;
 
 reg [`ES_TO_MS_BUS_WD -1:0] es_to_ms_bus_r;
 
+wire        ms_exc_sys     ;
 wire        ms_eret_flush  ;
 wire        ms_cp0_wen     ;
 wire        ms_res_from_cp0;
@@ -38,7 +39,8 @@ wire [ 3:0] ms_gr_we       ;
 wire [ 4:0] ms_dest        ;
 wire [31:0] ms_alu_result  ;
 wire [31:0] ms_pc          ;
-assign {ms_eret_flush  ,  //93:93
+assign {ms_exc_sys     ,  //94:94
+        ms_eret_flush  ,  //93:93
         ms_cp0_wen     ,  //92:92
         ms_res_from_cp0,  //91:91
         ms_cp0_addr    ,  //90:83
@@ -54,7 +56,8 @@ assign {ms_eret_flush  ,  //93:93
 wire [31:0] mem_result;
 wire [31:0] ms_final_result;
 
-assign ms_to_ws_bus = {ms_eret_flush  ,  //83:83
+assign ms_to_ws_bus = {ms_exc_sys     ,  //84:84
+                       ms_eret_flush  ,  //83:83
                        ms_cp0_wen     ,  //82:82
                        ms_res_from_cp0,  //81:81
                        ms_cp0_addr    ,  //80:73
