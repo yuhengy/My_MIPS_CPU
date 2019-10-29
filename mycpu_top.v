@@ -37,6 +37,9 @@ wire [`ES_TO_MS_BUS_WD -1:0] es_to_ms_bus;
 wire [`MS_TO_WS_BUS_WD -1:0] ms_to_ws_bus;
 wire [`WS_TO_RF_BUS_WD -1:0] ws_to_rf_bus;
 wire [`BR_BUS_WD       -1:0] br_bus;
+wire [                  1:0] ms_to_es_exc_eret_bus;
+wire [                  1:0] ws_to_es_exc_eret_bus;
+wire [`EXC_ERET_BUS_WD -1:0] exc_eret_bus;
 wire [`STALL_BUS_WD    -1:0] stall_es_bus;
 wire [`STALL_BUS_WD    -1:0] stall_ms_bus;
 wire [`STALL_BUS_WD    -1:0] stall_ws_bus;
@@ -53,6 +56,8 @@ if_stage if_stage(
     .ds_allowin     (ds_allowin     ),
     //brbus
     .br_bus         (br_bus         ),
+    //exc eret
+    .exc_eret_bus   (exc_eret_bus   ),
     //outputs
     .fs_to_ds_valid (fs_to_ds_valid ),
     .fs_to_ds_bus   (fs_to_ds_bus   ),
@@ -106,6 +111,9 @@ exe_stage exe_stage(
     //es to id stall
     .stall_es_bus   (stall_es_bus   ),
     .forward_es_bus (forward_es_bus ),
+    //exc eret
+    .es_exc_eret_bus(ms_to_es_exc_eret_bus,
+                     ws_to_es_exc_eret_bus),
     // data sram interface
     .data_sram_en   (data_sram_en   ),
     .data_sram_wen  (data_sram_wen  ),
@@ -129,6 +137,8 @@ mem_stage mem_stage(
     //ms to id stall
     .stall_ms_bus   (stall_ms_bus   ),
     .forward_ms_bus (forward_ms_bus ),
+    //exc eret
+    .ms_exc_eret_bus(ms_to_es_exc_eret_bus),
     //from data-sram
     .data_sram_rdata(data_sram_rdata)
 );
@@ -148,6 +158,9 @@ wb_stage wb_stage(
     .stall_ws_bus   (stall_ws_bus   ),
     .forward_ws_bus (forward_ws_bus ),
     .send_flush     (flush          ),
+    //exc eret
+    .ws_exc_eret_bus(ws_to_es_exc_eret_bus),
+    .exc_eret_bus   (exc_eret_bus   ),
     //trace debug interface
     .debug_wb_pc      (debug_wb_pc      ),
     .debug_wb_rf_wen  (debug_wb_rf_wen  ),

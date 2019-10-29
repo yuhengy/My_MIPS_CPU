@@ -14,7 +14,11 @@ module wb_stage(
     //ws to id stall
     output [`STALL_BUS_WD    -1:0]  stall_ws_bus  ,
     output [`FORWARD_BUS_WD  -1:0]  forward_ws_bus,
-    output                          send_flush,
+    output                          send_flush    ,
+    //wb exc eret
+    output [                  1:0]  ws_exc_eret_bus,
+    //exc_eret_epc bus
+    output [`EXC_ERET_BUS_WD -1:0]  exc_eret_bus  ,
     //trace debug interface
     output [31:0] debug_wb_pc     ,
     output [ 3:0] debug_wb_rf_wen ,
@@ -66,7 +70,10 @@ assign stall_ws_bus = {ws_valid && (|ws_gr_we), {4{ws_valid}} & ws_gr_we,
                        ws_dest};
 assign forward_ws_bus = {ws_valid,
                          ws_final_result};
-                         
+
+assign ws_exc_eret_bus = {ws_exc_sys && ws_valid, ws_eret_flush && ws_valid};
+assign exc_eret_bus    = {ws_exc_sys && ws_valid, ws_eret_flush && ws_valid, ws_cp0_epc};
+
 assign ws_ready_go = 1'b1;
 assign ws_allowin  = !ws_valid || ws_ready_go;
 always @(posedge clk) begin
