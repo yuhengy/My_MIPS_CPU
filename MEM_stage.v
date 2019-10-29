@@ -16,6 +16,8 @@ module mem_stage(
     //ms to id stall
     output [`STALL_BUS_WD    -1:0] stall_ms_bus  ,
     output [`FORWARD_BUS_WD  -1:0] forward_ms_bus,
+    //ms to es exc/eret bus
+    output [                  1:0] ms_exc_eret_bus,
     //from data-sram
     input  [31                 :0] data_sram_rdata
 );
@@ -74,6 +76,11 @@ assign stall_ms_bus = {ms_valid && ms_gr_we_1, {4{ms_valid}} & ms_gr_we,
                        ms_dest};
 assign forward_ms_bus = {ms_valid && !es_res_from_cp0,
                          ms_mem_alu_result};
+
+wire ms_exc;
+
+assign ms_exc = ms_exc_sys;
+assign ms_exc_eret_bus = {ms_exc, ms_eret_flush};
 
 assign ms_ready_go    = 1'b1;
 assign ms_allowin     = !ms_valid || ms_ready_go && ws_allowin;
