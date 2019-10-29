@@ -73,6 +73,8 @@ module divider(
     output        div_out_valid,
     input         div_out_ready
 );
+reg  flush_r;
+
 reg  div_in_valid_r ;
 wire div_in_valid_w ;
 reg  div_busy_r;
@@ -93,6 +95,14 @@ wire [63:0] m_axis_dout_tdata_usgn     ;
 wire        m_axis_dout_tvalid_sgn     ;
 wire        m_axis_dout_tvalid_usgn    ;
 
+//flush
+always @(posedge clk)
+    if(rst)
+        flush_r <= 1'b0;
+    else if(flush)
+        flush_r <= 1'b1;
+    else if(flush_r && div_out_valid_w)
+        flush_r <= 1'b0;
 
 //all three priorities are strictly needed
 always @(posedge clk)
@@ -108,8 +118,6 @@ assign  div_in_valid_w  = div_in_valid_r || div_in_valid && !div_busy_w;
 always @(posedge clk)
     if(rst)
         div_busy_r <= 1'h0;
-    else if(flush)
-        div_busy_r <= 1'h0;
     else if(div_in_valid)
         div_busy_r <= 1'h1;
     else if(div_out_valid_w && div_out_ready)
@@ -121,12 +129,12 @@ always @(posedge clk)
         div_out_valid_r <= 1'h0;
     else if(div_out_ready || div_in_valid && !div_busy_w)
         div_out_valid_r <= 1'h0;
-    else if(div_op[0] && m_axis_dout_tvalid_sgn
-         || div_op[1] && m_axis_dout_tvalid_usgn)
+    else if((div_op[0] || flush_r) && m_axis_dout_tvalid_sgn
+         || (div_op[1] || flush_r) && m_axis_dout_tvalid_usgn)
         div_out_valid_r <= 1'h1;
-assign  div_out_valid_w  = (div_op[0] && m_axis_dout_tvalid_sgn
-                         || div_op[1] && m_axis_dout_tvalid_usgn) || div_out_valid_r;
-assign  div_out_valid    = div_out_valid_w;
+assign  div_out_valid_w  = ((div_op[0] || flush_r) && m_axis_dout_tvalid_sgn
+                         || (div_op[1] || flush_r) && m_axis_dout_tvalid_usgn) || div_out_valid_r;
+assign  div_out_valid    = div_out_valid_w && !flush_r;
 
 assign s_axis_divisor_tvalid_sgn   = div_in_valid_w && div_op[0];
 assign s_axis_dividend_tvalid_sgn  = s_axis_divisor_tvalid_sgn;
