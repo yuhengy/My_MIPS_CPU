@@ -56,7 +56,7 @@ assign {ms_bd          ,  //95:95
        } = es_to_ms_bus_r;
 
 wire [31:0] mem_result;
-wire [31:0] ms_final_result;
+wire [31:0] ms_mem_alu_result;
 
 assign ms_to_ws_bus = {ms_bd          ,  //85:85
                        ms_exc_sys     ,  //84:84
@@ -66,14 +66,14 @@ assign ms_to_ws_bus = {ms_bd          ,  //85:85
                        ms_cp0_addr    ,  //80:73
                        ms_gr_we       ,  //72:69
                        ms_dest        ,  //68:64
-                       ms_final_result,  //63:32
+                       ms_mem_alu_result,  //63:32
                        ms_pc             //31:0
                       };
 
 assign stall_ms_bus = {ms_valid && ms_gr_we_1, {4{ms_valid}} & ms_gr_we,
                        ms_dest};
-assign forward_ms_bus = {ms_valid,
-                         ms_final_result};
+assign forward_ms_bus = {ms_valid && !es_res_from_cp0,
+                         ms_mem_alu_result};
 
 assign ms_ready_go    = 1'b1;
 assign ms_allowin     = !ms_valid || ms_ready_go && ws_allowin;
@@ -110,7 +110,7 @@ ld_select u_ld_select(
     .mem_result      (mem_result     )
 );
 
-assign ms_final_result = ms_res_from_mem ? mem_result
+assign ms_mem_alu_result = ms_res_from_mem ? mem_result
                                          : ms_alu_result;
 
 endmodule

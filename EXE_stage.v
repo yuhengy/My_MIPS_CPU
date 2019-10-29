@@ -16,6 +16,8 @@ module exe_stage(
     //es to id stall
     output [`STALL_BUS_WD    -1:0] stall_es_bus  ,
     output [`FORWARD_BUS_WD  -1:0] forward_es_bus,
+    //ms, ws exc
+    input  [                  3:0] es_exc_eret_bus,
     // data sram interface
     output        data_sram_en   ,
     output [ 3:0] data_sram_wen  ,
@@ -29,6 +31,8 @@ wire        es_ready_go   ;
 reg  [`DS_TO_ES_BUS_WD -1:0] ds_to_es_bus_r;
 
 wire        es_bd         ;
+wire        es_ms_ws_exc_eret;
+wire        es_exc        ;
 wire        es_exc_sys    ;
 wire        es_eret_flush ;
 wire        es_cp0_wen    ;
@@ -135,7 +139,7 @@ assign es_to_ms_bus = {es_bd          ,  //95:95
 
 assign stall_es_bus = {{5{es_valid && es_gr_we}},
                        es_dest};
-assign forward_es_bus = {es_valid && !es_res_from_mem,
+assign forward_es_bus = {es_valid && !es_res_from_mem && !es_res_from_cp0,
                          es_alu_result};
 
 assign es_ready_go    = !(es_res_from_div && !es_div_out_valid);
@@ -206,10 +210,10 @@ assign lo_wdata = es_hl_from_rs ? es_rs_value :
                   /* mult/div */  es_hl_result[31:0];
 
 always @(posedge clk) begin
-    if (hi_we)
+    if (hi_we && !es_ms_ws_exc_eret)
         hi <= hi_wdata;
     
-    if (lo_we)
+    if (lo_we && !es_ms_ws_exc_eret)
         lo <= lo_wdata;
 end
 
@@ -231,5 +235,9 @@ st_select u_st_select(
 
     .data_sram_wdata (data_sram_wdata)
 );
+
+//exc
+assign es_ms_ws_exc_eret = es_exc || es_eret_flush || (|es_exc_eret_bus);
+assign es_exc = es_exc_sys;
 
 endmodule

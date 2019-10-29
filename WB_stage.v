@@ -35,6 +35,7 @@ wire        ws_res_from_cp0;
 wire [ 7:0] ws_cp0_addr    ;
 wire [ 3:0] ws_gr_we       ;
 wire [ 4:0] ws_dest        ;
+wire [31:0] ws_mem_alu_result;
 wire [31:0] ws_final_result;
 wire [31:0] ws_pc          ;
 assign {ws_bd          ,  //85:85
@@ -45,7 +46,7 @@ assign {ws_bd          ,  //85:85
         ws_cp0_addr    ,  //80:73
         ws_gr_we       ,  //72:69
         ws_dest        ,  //68:64
-        ws_final_result,  //63:32
+        ws_mem_alu_result,  //63:32
         ws_pc             //31:0
        } = ms_to_ws_bus_r;
 
@@ -105,7 +106,7 @@ CP0_reg u_CP0_reg(
 
     .cp0_addr   (ws_cp0_addr                ),
     .cp0_wen    (ws_valid && ws_cp0_wen     ),
-    .cp0_wdata  (ws_final_result            ),
+    .cp0_wdata  (ws_mem_alu_result          ),
 
     .cp0_rdata  (ws_cp0_rdata               ),
 
@@ -119,6 +120,8 @@ CP0_reg u_CP0_reg(
     .int_happen (                           ),
     .eret       (ws_valid && ws_eret_flush  )
 );
+assign ws_final_result = ws_res_from_cp0? ws_cp0_rdata:
+                                          ws_mem_alu_result;
 
 // debug info generate
 assign debug_wb_pc       = ws_pc;
