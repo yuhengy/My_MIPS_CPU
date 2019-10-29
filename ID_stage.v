@@ -84,6 +84,7 @@ assign {es_forward_valid ,es_forward_data,
         ms_forward_valid ,ms_forward_data,
         ws_forward_valid ,ws_forward_data} = forward_ds_bus;
 
+wire        br_bd;
 wire        br_taken;
 wire [31:0] br_target;
 wire        br_happen;  // br_taken component for Branch (excluding Jump)
@@ -208,7 +209,10 @@ wire [31:0] rf_rdata1;
 wire [ 4:0] rf_raddr2;
 wire [31:0] rf_rdata2;
 
-assign br_bus       = {br_taken,br_target};
+assign br_bus       = {br_bd    ,   //33:33
+                       br_taken ,   //32:32
+                       br_target    //31: 0 
+                      };
 
 assign ds_to_es_bus = {exc_sys     ,  //174:174
                        eret_flush  ,  //173:173
@@ -465,6 +469,7 @@ br_comp u_br_comp(
     .br_happen  (br_happen  )
 );
 
+assign br_bd    = |br_op || inst_j || inst_jal || inst_jr || inst_jalr;
 assign br_taken = (   br_happen
                    || inst_j
                    || inst_jal
