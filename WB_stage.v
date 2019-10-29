@@ -108,8 +108,8 @@ assign ws_exc_type[6] = 0;
 assign cp0_exc_type = {6{ws_valid}} & ws_exc_type;
 
 CP0_reg u_CP0_reg(
-    .clk            
-    .rst
+    .clk                                     ,
+    .rst                                     ,
 
     .cp0_addr   (ws_cp0_addr                ),
     .cp0_wen    (ws_valid && ws_cp0_wen     ),

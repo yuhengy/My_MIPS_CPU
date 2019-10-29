@@ -1,3 +1,4 @@
+`include "mycpu.h"
 module CP0_reg(
 	input        clk,
 	input        rst,
@@ -75,7 +76,7 @@ assign int_happen = !cp0_status_exl && cp0_status_ie
 
 //cp0 regs
 	//status
-assign cp0_status = {9'h0, cp0_status_bev, 6'h0, cp0_status_im, 6'h0, cp0_status_exl, cp0_status_ie}
+assign cp0_status = {9'h0, cp0_status_bev, 6'h0, cp0_status_im, 6'h0, cp0_status_exl, cp0_status_ie};
 
 assign cp0_status_bev = 1'b1;
 
@@ -159,12 +160,12 @@ always @(posedge clk)
 always @(posedge clk)
 	if(rst) tick <= 1'b0;
 	else    tick <= ~tick;
-always @(poedge clk)
-	if(cp0_wen && cp0_addr_d[`COUNT_CUM] && cp0_addr[2:0]==3'h0)
+always @(posedge clk)
+	if(cp0_wen && cp0_addr_d[`COUNT_NUM] && cp0_addr[2:0]==3'h0)
 		cp0_count <= cp0_count + 1'b1;
 
 	//compare
-always @(poesdge clk)
+always @(posedge clk)
 	if(cp0_wen && cp0_addr_d[`COMPARE_NUM] && cp0_addr[2:0]==3'h0)
 		cp0_compare <= cp0_wdata;
 

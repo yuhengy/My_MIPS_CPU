@@ -112,8 +112,8 @@ exe_stage exe_stage(
     .stall_es_bus   (stall_es_bus   ),
     .forward_es_bus (forward_es_bus ),
     //exc eret
-    .es_exc_eret_bus(ms_to_es_exc_eret_bus,
-                     ws_to_es_exc_eret_bus),
+    .es_exc_eret_bus({ms_to_es_exc_eret_bus,
+                      ws_to_es_exc_eret_bus}),
     // data sram interface
     .data_sram_en   (data_sram_en   ),
     .data_sram_wen  (data_sram_wen  ),
