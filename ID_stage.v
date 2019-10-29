@@ -29,10 +29,13 @@ wire [31                 :0] fs_pc;
 reg  [`FS_TO_DS_BUS_WD -1:0] fs_to_ds_bus_r;
 assign fs_pc = fs_to_ds_bus[31:0];
 
+wire        ds_bd  ;    // branch delay slot
 wire [31:0] ds_inst;
 wire [31:0] ds_pc  ;
-assign {ds_inst,
-        ds_pc  } = fs_to_ds_bus_r;
+assign {ds_bd   ,   // 64:64
+        ds_inst ,   // 63:32
+        ds_pc       // 31:0
+       } = fs_to_ds_bus_r;
 
 wire [ 3:0] rf_we   ;
 wire [ 4:0] rf_waddr;
@@ -214,7 +217,8 @@ assign br_bus       = {br_bd    ,   //33:33
                        br_target    //31: 0 
                       };
 
-assign ds_to_es_bus = {exc_sys     ,  //174:174
+assign ds_to_es_bus = {ds_bd       ,  //175:175
+                       exc_sys     ,  //174:174
                        eret_flush  ,  //173:173
                        cp0_wen     ,  //172:172
                        res_from_cp0,  //171:171
