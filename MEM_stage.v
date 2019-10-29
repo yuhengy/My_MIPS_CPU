@@ -74,7 +74,7 @@ assign ms_to_ws_bus = {ms_bd          ,  //85:85
 
 assign stall_ms_bus = {ms_valid && ms_gr_we_1, {4{ms_valid}} & ms_gr_we,
                        ms_dest};
-assign forward_ms_bus = {ms_valid && !es_res_from_cp0,
+assign forward_ms_bus = {ms_valid && !ms_res_from_cp0,
                          ms_mem_alu_result};
 
 wire ms_exc;
