@@ -3,7 +3,7 @@
 module wb_stage(
     input                           clk           ,
     input                           reset         ,
-    input                           ext_int_in    ,
+    input  [5:0]                    ext_int_in    ,
     input                           flush         ,
     //allowin
     output                          ws_allowin    ,
