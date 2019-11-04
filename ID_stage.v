@@ -101,6 +101,7 @@ wire [ 5:0] br_op;
 
 wire        ds_exc;
 wire [ 7:0] ds_exc_type;
+wire        ov_check;
 wire        eret_flush;
 wire        cp0_wen;
 wire        res_from_cp0;
@@ -211,6 +212,7 @@ wire        inst_mfc0;
 wire        inst_mtc0;
 wire        inst_syscall;
 wire        inst_break;
+wire        inst_others;
 
 wire        dst_is_r31;  
 wire        dst_is_rt;   
@@ -225,7 +227,8 @@ assign br_bus       = {br_bd    ,   //33:33
                        br_target    //31: 0 
                       };
 
-assign ds_to_es_bus = {ds_bd       ,  //183:183
+assign ds_to_es_bus = {ov_check    ,  //184:184
+                       ds_bd       ,  //183:183
                        ds_exc      ,  //182:182
                        ds_exc_type ,  //181:174
                        eret_flush  ,  //173:173
@@ -361,6 +364,21 @@ assign inst_mfc0   = op_d[6'h10] & rs_d[5'h00]   & sa_d[5'h00] & (func[5:3] == 3
 assign inst_mtc0   = op_d[6'h10] & rs_d[5'h04]   & sa_d[5'h00] & (func[5:3] == 3'h0);
 assign inst_syscall= op_d[6'h00] & func_d[6'h0c];
 assign inst_break  = op_d[6'h00] & func_d[6'h0d];
+assign inst_others = ~(inst_add   | inst_addi  | inst_addu | inst_sub  | inst_subu
+                     | inst_mult  | inst_multu | inst_div  | inst_divu
+                     | inst_slt   | inst_slti  | inst_sltu | inst_sltiu
+                     | inst_and   | inst_andi  | inst_or   | inst_ori  | inst_xor  | inst_xori | inst_nor
+                     | inst_sll   | inst_sllv  | inst_srl  | inst_srlv | inst_sra  | inst_srav
+                     | inst_addiu | inst_lui   | 
+
+                     | inst_load  | inst_lw    | inst_lb   | inst_lbu  | inst_lh   | inst_lhu  | inst_lwl | inst_lwr
+                     | inst_store | inst_sw    | inst_sb   | inst_sh   | inst_swl  | inst_swr
+
+                     | inst_beq   | inst_bne   | inst_bgez | inst_bgtz | inst_blez | inst_bltz | inst_bgezal | inst_bltzal
+                     | inst_j     | inst_jal   | inst_jr   | inst_jalr
+
+                     | inst_mfhi  | inst_mflo  | inst_mthi | inst_mtlo
+                     | inst_eret  | inst_mfc0  | inst_mtc0 | inst_syscall | inst_break);
 
 assign alu_op[ 0] = inst_add | inst_addi | inst_addu | inst_addiu
                   | load_op  | store_op  | inst_jal  | inst_jalr | inst_bgezal | inst_bltzal;
@@ -415,9 +433,9 @@ assign hl_from_rs   = inst_mthi  | inst_mtlo;
 assign res_from_cp0 = inst_mfc0;
 assign cp0_wen      = inst_mtc0;
 assign eret_flush   = inst_eret;
-assign ds_exc       = old_fs_exc | inst_syscall | inst_break;
-assign ds_exc_type  = {old_fs_exc_type[7:4], inst_syscall, inst_break, old_fs_exc_type[1:0]};
-
+assign ds_exc       = old_fs_exc | inst_syscall | inst_break | inst_others;
+assign ds_exc_type  = {old_fs_exc_type[7:4], inst_syscall, inst_break, inst_others, old_fs_exc_type[0]};
+assign ov_check     = inst_add | inst_addi | inst_sub;
 
 assign dest         = dst_is_r31 ? 5'd31 :
                       dst_is_rt  ? rt    : 
