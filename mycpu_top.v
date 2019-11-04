@@ -22,6 +22,9 @@ module mycpu_top(
 reg         reset;
 always @(posedge clk) reset <= ~resetn;
 
+wire [5:0]   ext_int_in;
+assign ext_int_in = 6'h0;
+
 wire         flush;
 wire         ds_allowin;
 wire         es_allowin;
@@ -146,6 +149,7 @@ mem_stage mem_stage(
 wb_stage wb_stage(
     .clk            (clk            ),
     .reset          (reset          ),
+    .ext_int_in     (ext_int_in     ),
     .flush          (flush          ),
     //allowin
     .ws_allowin     (ws_allowin     ),

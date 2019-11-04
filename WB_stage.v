@@ -3,6 +3,7 @@
 module wb_stage(
     input                           clk           ,
     input                           reset         ,
+    input                           ext_int_in    ,
     input                           flush         ,
     //allowin
     output                          ws_allowin    ,
@@ -111,7 +112,7 @@ CP0_reg u_CP0_reg(
     .exc_type   ({8{ws_valid}} & ws_exc_type),
     .PC         (ws_pc                      ),
     .is_slot    (ws_bd                      ),
-    .int_num    (0                          ),
+    .int_num    (ext_int_in                 ),
     .bad_vaddr  (ws_badvaddr                ),
 
     .EPC        (ws_cp0_epc                 ),
