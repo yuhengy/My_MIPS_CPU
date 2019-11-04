@@ -55,7 +55,6 @@ wire [`FORWARD_BUS_WD  -1:0] forward_ws_bus;
 if_stage if_stage(
     .clk            (clk            ),
     .reset          (reset          ),
-    .int_happen     (int_happen     ),
     .flush          (flush          ),
     //allowin
     .ds_allowin     (ds_allowin     ),
@@ -77,6 +76,7 @@ if_stage if_stage(
 id_stage id_stage(
     .clk            (clk            ),
     .reset          (reset          ),
+    .int_happen     (int_happen     ),
     .flush          (flush          ),
     //allowin
     .es_allowin     (es_allowin     ),
