@@ -30,6 +30,7 @@ wire        es_ready_go   ;
 
 reg  [`DS_TO_ES_BUS_WD -1:0] ds_to_es_bus_r;
 
+wire        es_ov_check   ; // Need to check ALU Overflow
 wire        es_bd         ;
 wire        es_ms_ws_exc_eret;
 wire        old_ds_exc    ;
@@ -66,7 +67,8 @@ wire [15:0] es_imm        ;
 wire [31:0] es_rs_value   ;
 wire [31:0] es_rt_value   ;
 wire [31:0] es_pc         ;
-assign {es_bd          ,  //183:183
+assign {es_ov_check    ,  //184:184
+        es_bd          ,  //183:183
         old_ds_exc     ,  //182:182
         old_ds_exc_type,  //181:174
         es_eret_flush  ,  //173:173
@@ -103,6 +105,7 @@ assign {es_bd          ,  //183:183
 wire [31:0] es_alu_src1   ;
 wire [31:0] es_alu_src2   ;
 wire [31:0] es_alu_result ;
+wire        es_alu_ov     ; // ALU Overflow
 wire [63:0] es_mul_result ;
 wire [63:0] es_div_result ;
 wire [63:0] es_hl_result  ;
@@ -182,7 +185,8 @@ alu u_alu(
     .alu_op     (es_alu_op    ),
     .alu_src1   (es_alu_src1  ),
     .alu_src2   (es_alu_src2  ),
-    .alu_result (es_alu_result)
+    .alu_result (es_alu_result),
+    .alu_ov     (es_alu_ov    )
 );
 
 multiplier u_multiplier(
@@ -230,6 +234,7 @@ assign data_sram_wen   = es_mem_we & {4{es_valid && !es_ms_ws_exc_eret}} ;
 assign data_sram_addr  = es_alu_result;
 
 wire    es_ades;    // Address Error on Store
+wire    es_ov;      // Overflow
 
 st_decode u_st_decode(
     .inst_store(es_inst_store),
@@ -248,9 +253,11 @@ st_select u_st_select(
 );
 
 //exc
+assign es_ov    = es_ov_check && es_alu_ov;
+
 assign es_ms_ws_exc_eret = es_exc || es_eret_flush || (|es_exc_eret_bus);
-assign es_exc            = old_ds_exc || es_ades;
-assign es_exc_type       = old_ds_exc_type | {3'h0, es_ades, 4'h0};
+assign es_exc            = old_ds_exc || es_ades || es_ov;
+assign es_exc_type       = old_ds_exc_type | {3'h0, es_ades, 3'h0, es_ov};
 assign es_badvaddr       = old_ds_exc_type[6] ? es_pc :         // Address Error on Ins
                            /* AdES */           data_sram_addr;
 
