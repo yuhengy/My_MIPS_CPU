@@ -44,6 +44,8 @@ assign fs_to_ds_bus = {fs_bd   ,
                        fs_inst ,
                        fs_pc   };
 
+wire         fs_adel;   // Address Error on IF
+
 //exc eret bus
 wire         nextpc_is_exc;
 wire         nextpc_is_epc;
@@ -89,7 +91,9 @@ assign inst_sram_wdata = 32'b0;
 assign fs_inst         = inst_sram_rdata;
 
 //exc
-assign fs_exc      = 0;
-assign fs_exc_type = 8'h0;
+assign fs_exc      = |fs_exc_type;
+assign fs_exc_type = {1'b0, fs_adel, 6'h00};
+
+assign fs_adel     = !(fs_pc[1:0] == 2'b00);
 
 endmodule

@@ -224,7 +224,8 @@ module ld_decode(
     input         gr_we_1,  // 1 bit we
 
     output  [3:0] ld_rshift_op,
-    output  [3:0] gr_we
+    output  [3:0] gr_we,
+    output        adel      // Address error on Load
 );
 
 wire    lw;
@@ -278,6 +279,9 @@ assign gr_we[3]  = lw || lb || lbu || lh || lhu || non_load && gr_we_1
                 || lwl
                 || lwr && addr_d[0];
 
+assign adel = lw          && !addr_d[0]
+           || (lh || lhu) && !(addr[0] == 1'b0);
+
 endmodule
 
 
@@ -286,7 +290,8 @@ module st_decode(
     input  [1:0] addr,
 
     output [3:0] st_rshift_op,   // rshift amount on selector
-    output [3:0] mem_we
+    output [3:0] mem_we,
+    output       ades            // Address Error on Store
 );
 
 wire    sw;
@@ -337,6 +342,9 @@ assign mem_we[3] = sw || sb && addr_d[3]
                 || sh && addr_d[2]
                 || swl&& addr_d[3]
                 || swr;
+
+assign ades = sw && !addr_d[0]
+           || sh && !(addr[0] == 1'b0);
 
 endmodule
 

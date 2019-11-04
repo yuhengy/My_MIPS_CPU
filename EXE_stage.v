@@ -125,7 +125,10 @@ assign es_res_from_mem = es_load_op;
 assign es_res_from_mul = es_mul_op[0] | es_mul_op[1];
 assign es_res_from_div = es_div_op[0] | es_div_op[1];
 
-assign es_to_ms_bus = {es_bd          ,  //103:103
+wire [31:0] es_badvaddr;
+
+assign es_to_ms_bus = {es_badvaddr    ,  //135:104
+                       es_bd          ,  //103:103
                        es_exc         ,  //102:102
                        es_exc_type    ,  //94:101
                        es_eret_flush  ,  //93:93
@@ -226,12 +229,15 @@ assign data_sram_en    = 1'b1;
 assign data_sram_wen   = es_mem_we & {4{es_valid && !es_ms_ws_exc_eret}} ;
 assign data_sram_addr  = es_alu_result;
 
+wire    es_ades;    // Address Error on Store
+
 st_decode u_st_decode(
     .inst_store(es_inst_store),
     .addr(data_sram_addr[1:0]),
 
     .st_rshift_op(es_st_rshift_op),
-    .mem_we(es_mem_we)
+    .mem_we(es_mem_we),
+    .ades(es_ades)
 );
 
 st_select u_st_select(
@@ -243,7 +249,9 @@ st_select u_st_select(
 
 //exc
 assign es_ms_ws_exc_eret = es_exc || es_eret_flush || (|es_exc_eret_bus);
-assign es_exc            = old_ds_exc;
-assign es_exc_type       = old_ds_exc_type;
+assign es_exc            = old_ds_exc || es_ades;
+assign es_exc_type       = old_ds_exc_type | {3'h0, es_ades, 4'h0};
+assign es_badvaddr       = old_ds_exc_type[6] ? es_pc :         // Address Error on Ins
+                           /* AdES */           data_sram_addr;
 
 endmodule

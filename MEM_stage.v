@@ -27,6 +27,9 @@ wire        ms_ready_go;
 
 reg [`ES_TO_MS_BUS_WD -1:0] es_to_ms_bus_r;
 
+wire [31:0] old_es_badvaddr;
+wire        old_es_exc     ;
+wire [ 7:0] old_es_exc_type;
 wire        ms_bd          ;
 wire        ms_exc         ;
 wire [ 7:0] ms_exc_type    ;
@@ -43,9 +46,10 @@ wire [ 3:0] ms_gr_we       ;
 wire [ 4:0] ms_dest        ;
 wire [31:0] ms_alu_result  ;
 wire [31:0] ms_pc          ;
-assign {ms_bd          ,  //103:103
-        ms_exc         ,  //102:102
-        ms_exc_type    ,  //101:94
+assign {old_es_badvaddr,  //135:104
+        ms_bd          ,  //103:103
+        old_es_exc     ,  //102:102
+        old_es_exc_type,  //101:94
         ms_eret_flush  ,  //93:93
         ms_cp0_wen     ,  //92:92
         ms_res_from_cp0,  //91:91
@@ -59,20 +63,22 @@ assign {ms_bd          ,  //103:103
         ms_pc             //31:0
        } = es_to_ms_bus_r;
 
+wire [31:0] ms_badvaddr;
 wire [31:0] mem_result;
 wire [31:0] ms_mem_alu_result;
 
-assign ms_to_ws_bus = {ms_bd          ,  //93:93
-                       ms_exc         ,  //92:92
-                       ms_exc_type    ,  //91:84
-                       ms_eret_flush  ,  //83:83
-                       ms_cp0_wen     ,  //82:82
-                       ms_res_from_cp0,  //81:81
-                       ms_cp0_addr    ,  //80:73
-                       ms_gr_we       ,  //72:69
-                       ms_dest        ,  //68:64
-                       ms_mem_alu_result,  //63:32
-                       ms_pc             //31:0
+assign ms_to_ws_bus = {ms_badvaddr    ,  //125:94
+                       ms_bd          ,  // 93:93
+                       ms_exc         ,  // 92:92
+                       ms_exc_type    ,  // 91:84
+                       ms_eret_flush  ,  // 83:83
+                       ms_cp0_wen     ,  // 82:82
+                       ms_res_from_cp0,  // 81:81
+                       ms_cp0_addr    ,  // 80:73
+                       ms_gr_we       ,  // 72:69
+                       ms_dest        ,  // 68:64
+                       ms_mem_alu_result,// 63:32
+                       ms_pc             // 31: 0
                       };
 
 assign stall_ms_bus = {ms_valid && ms_gr_we_1, {4{ms_valid}} & ms_gr_we,
@@ -100,13 +106,16 @@ always @(posedge clk) begin
     end
 end
 
+wire    ms_adel;
+
 ld_decode u_ld_decode(
     .inst_load(ms_inst_load),
     .addr(ms_alu_result[1:0]),
     .gr_we_1(ms_gr_we_1),
 
     .ld_rshift_op(ms_ld_rshift_op),
-    .gr_we(ms_gr_we)
+    .gr_we(ms_gr_we),
+    .adel(ms_adel)
 );
 
 ld_select u_ld_select(
@@ -119,5 +128,11 @@ ld_select u_ld_select(
 
 assign ms_mem_alu_result = ms_res_from_mem ? mem_result
                                          : ms_alu_result;
+
+// exceptions
+assign ms_exc      = old_es_exc || ms_adel;
+assign ms_exc_type = old_es_exc_type | {2'h0, ms_adel, 5'h00};
+assign ms_badvaddr = (old_es_exc_type[6] || old_es_exc_type[4]) ? old_es_badvaddr : // Address Error on Ins or Store
+                     /* AdEL */                                   ms_alu_result;
 
 endmodule

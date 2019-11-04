@@ -32,6 +32,8 @@ assign fs_pc = fs_to_ds_bus[31:0];
 wire        ds_bd  ;    // branch delay slot
 wire [31:0] ds_inst;
 wire [31:0] ds_pc  ;
+wire        old_fs_exc;
+wire [ 7:0] old_fs_exc_type;
 assign {ds_bd           ,  // 73:73
         old_fs_exc      ,  // 72:72
         old_fs_exc_type ,  // 71:64
@@ -97,8 +99,6 @@ wire [31:0] br_target;
 wire        br_happen;  // br_taken component for Branch (excluding Jump)
 wire [ 5:0] br_op;
 
-wire        old_fs_exc;
-wire [ 7:0] old_fs_exc_type;
 wire        ds_exc;
 wire [ 7:0] ds_exc_type;
 wire        eret_flush;

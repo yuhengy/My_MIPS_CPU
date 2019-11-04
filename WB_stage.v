@@ -31,6 +31,7 @@ wire        ws_ready_go;
 
 reg [`MS_TO_WS_BUS_WD -1:0] ms_to_ws_bus_r;
 
+wire [31:0] ws_badvaddr    ;
 wire        ws_bd          ;
 wire        ws_exc         ;
 wire [ 7:0] ws_exc_type    ;
@@ -43,17 +44,18 @@ wire [ 4:0] ws_dest        ;
 wire [31:0] ws_mem_alu_result;
 wire [31:0] ws_final_result;
 wire [31:0] ws_pc          ;
-assign {ws_bd          ,  //93:93
-        ws_exc         ,  //92:92
-        ws_exc_type    ,  //91:84
-        ws_eret_flush  ,  //83:83
-        ws_cp0_wen     ,  //82:82
-        ws_res_from_cp0,  //81:81
-        ws_cp0_addr    ,  //80:73
-        ws_gr_we       ,  //72:69
-        ws_dest        ,  //68:64
-        ws_mem_alu_result,  //63:32
-        ws_pc             //31:0
+assign {ws_badvaddr    ,  //125:94
+        ws_bd          ,  // 93:93
+        ws_exc         ,  // 92:92
+        ws_exc_type    ,  // 91:84
+        ws_eret_flush  ,  // 83:83
+        ws_cp0_wen     ,  // 82:82
+        ws_res_from_cp0,  // 81:81
+        ws_cp0_addr    ,  // 80:73
+        ws_gr_we       ,  // 72:69
+        ws_dest        ,  // 68:64
+        ws_mem_alu_result,// 63:32
+        ws_pc             // 31: 0
        } = ms_to_ws_bus_r;
 
 wire [3 :0] rf_we;
@@ -110,7 +112,7 @@ CP0_reg u_CP0_reg(
     .PC         (ws_pc                      ),
     .is_slot    (ws_bd                      ),
     .int_num    (0                          ),
-    .bad_vaddr  (0                          ),
+    .bad_vaddr  (ws_badvaddr                ),
 
     .EPC        (ws_cp0_epc                 ),
     .int_happen (                           ),
