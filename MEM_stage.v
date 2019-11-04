@@ -27,7 +27,6 @@ wire        ms_ready_go;
 
 reg [`ES_TO_MS_BUS_WD -1:0] es_to_ms_bus_r;
 
-wire [31:0] old_es_badvaddr;
 wire        old_es_exc     ;
 wire [ 7:0] old_es_exc_type;
 wire        ms_bd          ;
@@ -46,8 +45,7 @@ wire [ 3:0] ms_gr_we       ;
 wire [ 4:0] ms_dest        ;
 wire [31:0] ms_alu_result  ;
 wire [31:0] ms_pc          ;
-assign {old_es_badvaddr,  //135:104
-        ms_bd          ,  //103:103
+assign {ms_bd          ,  //103:103
         old_es_exc     ,  //102:102
         old_es_exc_type,  //101:94
         ms_eret_flush  ,  //93:93
@@ -132,7 +130,7 @@ assign ms_mem_alu_result = ms_res_from_mem ? mem_result
 // exceptions
 assign ms_exc      = old_es_exc || ms_adel;
 assign ms_exc_type = old_es_exc_type | {2'h0, ms_adel, 5'h00};
-assign ms_badvaddr = (old_es_exc_type[6] || old_es_exc_type[4]) ? old_es_badvaddr : // Address Error on Ins or Store
-                     /* AdEL */                                   ms_alu_result;
+assign ms_badvaddr = old_es_exc_type[6] ? ms_pc :           // Address Error on Ins
+                     /* Data */           ms_alu_result;
 
 endmodule
