@@ -28,7 +28,8 @@ wire        ms_ready_go;
 reg [`ES_TO_MS_BUS_WD -1:0] es_to_ms_bus_r;
 
 wire        ms_bd          ;
-wire        ms_exc_sys     ;
+wire        ms_exc         ;
+wire [ 7:0] ms_exc_type    ;
 wire        ms_eret_flush  ;
 wire        ms_cp0_wen     ;
 wire        ms_res_from_cp0;
@@ -42,8 +43,9 @@ wire [ 3:0] ms_gr_we       ;
 wire [ 4:0] ms_dest        ;
 wire [31:0] ms_alu_result  ;
 wire [31:0] ms_pc          ;
-assign {ms_bd          ,  //95:95
-        ms_exc_sys     ,  //94:94
+assign {ms_bd          ,  //103:103
+        ms_exc         ,  //102:102
+        ms_exc_type    ,  //101:94
         ms_eret_flush  ,  //93:93
         ms_cp0_wen     ,  //92:92
         ms_res_from_cp0,  //91:91
@@ -60,8 +62,9 @@ assign {ms_bd          ,  //95:95
 wire [31:0] mem_result;
 wire [31:0] ms_mem_alu_result;
 
-assign ms_to_ws_bus = {ms_bd          ,  //85:85
-                       ms_exc_sys     ,  //84:84
+assign ms_to_ws_bus = {ms_bd          ,  //93:93
+                       ms_exc         ,  //92:92
+                       ms_exc_type    ,  //91:84
                        ms_eret_flush  ,  //83:83
                        ms_cp0_wen     ,  //82:82
                        ms_res_from_cp0,  //81:81
@@ -77,9 +80,6 @@ assign stall_ms_bus = {ms_valid && ms_gr_we_1, {4{ms_valid}} & ms_gr_we,
 assign forward_ms_bus = {ms_valid && !ms_res_from_cp0,
                          ms_mem_alu_result};
 
-wire ms_exc;
-
-assign ms_exc = ms_exc_sys;
 assign ms_exc_eret_bus = {2{ms_valid}} & {ms_exc, ms_eret_flush};
 
 assign ms_ready_go    = 1'b1;

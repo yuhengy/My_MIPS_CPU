@@ -43,10 +43,9 @@ wire        cp0_cause_exccode_wen;
 
 reg  [31:0] cp0_epc;
 wire        cp0_epc_wen;
-reg [ 31:0] cp0_badvaddr;
+reg  [31:0] cp0_badvaddr;
 wire        cp0_badvaddr_wen;
-reg         tick;
-reg  [31:0] cp0_count;
+reg  [32:0] cp0_count;
 reg  [31:0] cp0_compare;
 
 
@@ -70,7 +69,7 @@ assign exccode = int  ? 5'h00 :
                  bp   ? 5'h09 :
                  ov   ? 5'h0c :
                  rdae ? 5'h04 :
-                 ades ? 5'h05 ;
+           /* ades */   5'h05 ;
 
 assign int_happen = !cp0_status_exl && cp0_status_ie
                  && (|(cp0_status_im & cp0_cause_ip));
@@ -153,17 +152,16 @@ always @(posedge clk)
 		cp0_epc <= cp0_wdata;
 
 	//badvaddr
-assign cp0_badvaddr_wen = adel;
+assign cp0_badvaddr_wen = rine | rdae | ades;
 always @(posedge clk)
 	if(cp0_badvaddr_wen)
 		cp0_badvaddr <= bad_vaddr;
 
 	//count
 always @(posedge clk)
-	if(rst) tick <= 1'b0;
-	else    tick <= ~tick;
-always @(posedge clk)
 	if(cp0_wen && cp0_addr_d[`COUNT_NUM] && cp0_addr[2:0]==3'h0)
+		cp0_count <= {cp0_wdata, 1'b0};
+	else
 		cp0_count <= cp0_count + 1'b1;
 
 	//compare

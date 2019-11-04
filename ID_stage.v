@@ -32,9 +32,11 @@ assign fs_pc = fs_to_ds_bus[31:0];
 wire        ds_bd  ;    // branch delay slot
 wire [31:0] ds_inst;
 wire [31:0] ds_pc  ;
-assign {ds_bd   ,   // 64:64
-        ds_inst ,   // 63:32
-        ds_pc       // 31:0
+assign {ds_bd           ,  // 73:73
+        old_fs_exc      ,  // 72:72
+        old_fs_exc_type ,  // 71:64
+        ds_inst         ,  // 63:32
+        ds_pc              // 31:0
        } = fs_to_ds_bus_r;
 
 wire [ 3:0] rf_we   ;
@@ -45,6 +47,8 @@ assign {rf_we   ,  //40:37
         rf_wdata   //31:0
        } = ws_to_rf_bus;
 
+wire        use_reg1;
+wire        use_reg2;
 wire        reg1_stall_valid;
 wire        reg2_stall_valid;
 wire        es_we_1;
@@ -93,7 +97,10 @@ wire [31:0] br_target;
 wire        br_happen;  // br_taken component for Branch (excluding Jump)
 wire [ 5:0] br_op;
 
-wire        exc_sys;
+wire        old_fs_exc;
+wire [ 7:0] old_fs_exc_type;
+wire        ds_exc;
+wire [ 7:0] ds_exc_type;
 wire        eret_flush;
 wire        cp0_wen;
 wire        res_from_cp0;
@@ -203,6 +210,7 @@ wire        inst_eret;
 wire        inst_mfc0;
 wire        inst_mtc0;
 wire        inst_syscall;
+wire        inst_break;
 
 wire        dst_is_r31;  
 wire        dst_is_rt;   
@@ -217,8 +225,9 @@ assign br_bus       = {br_bd    ,   //33:33
                        br_target    //31: 0 
                       };
 
-assign ds_to_es_bus = {ds_bd       ,  //175:175
-                       exc_sys     ,  //174:174
+assign ds_to_es_bus = {ds_bd       ,  //183:183
+                       ds_exc      ,  //182:182
+                       ds_exc_type ,  //181:174
                        eret_flush  ,  //173:173
                        cp0_wen     ,  //172:172
                        res_from_cp0,  //171:171
@@ -351,6 +360,7 @@ assign inst_eret   = op_d[6'h10] & func_d[6'h18] & rs_d[5'h10] & rt_d[5'h00] & r
 assign inst_mfc0   = op_d[6'h10] & rs_d[5'h00]   & sa_d[5'h00] & (func[5:3] == 3'h0);
 assign inst_mtc0   = op_d[6'h10] & rs_d[5'h04]   & sa_d[5'h00] & (func[5:3] == 3'h0);
 assign inst_syscall= op_d[6'h00] & func_d[6'h0c];
+assign inst_break  = op_d[6'h00] & func_d[6'h0d];
 
 assign alu_op[ 0] = inst_add | inst_addi | inst_addu | inst_addiu
                   | load_op  | store_op  | inst_jal  | inst_jalr | inst_bgezal | inst_bltzal;
@@ -405,7 +415,8 @@ assign hl_from_rs   = inst_mthi  | inst_mtlo;
 assign res_from_cp0 = inst_mfc0;
 assign cp0_wen      = inst_mtc0;
 assign eret_flush   = inst_eret;
-assign exc_sys      = inst_syscall;
+assign ds_exc       = old_fs_exc | inst_syscall | inst_break;
+assign ds_exc_type  = {old_fs_exc_type[7:4], inst_syscall, inst_break, old_fs_exc_type[1:0]};
 
 
 assign dest         = dst_is_r31 ? 5'd31 :
@@ -442,8 +453,18 @@ forward_merge u_forward_merge_2(
     .merge_value  (                                           rt_value)
 );
 
-assign reg1_stall_valid = rf_raddr1!=5'h0 && !src1_is_sa  && !inst_jal;
-assign reg2_stall_valid = rf_raddr2!=5'h0 && (!src2_is_imm || store_op) && !src2_is_8 ;
+assign use_reg1 = ~inst_sll  & ~inst_srl     & ~inst_sra    & ~inst_jal
+                & ~inst_mfhi & ~inst_mflo    & ~inst_mfc0   & ~inst_mtc0
+                & ~inst_eret & ~inst_syscall & ~inst_break;
+assign use_reg2 = ~inst_addi & ~inst_addiu   & ~inst_slti   & ~inst_sltiu  & ~inst_lui & ~load_op
+                & ~inst_andi & ~inst_ori     & ~inst_xori
+                & ~inst_jal  & ~inst_jalr    & ~inst_bgezal & ~inst_bltzal
+                & ~inst_bgez & ~inst_bgtz    & ~inst_blez   & ~inst_bltz   & ~inst_j    & ~inst_jr
+                & ~inst_mfhi & ~inst_mflo    & ~inst_mthi   & ~inst_mtlo   & ~inst_mfc0
+                & ~inst_eret & ~inst_syscall & ~inst_break;
+
+assign reg1_stall_valid = rf_raddr1!=5'h0 && use_reg1;
+assign reg2_stall_valid = rf_raddr2!=5'h0 && use_reg2;
 assign stall_reg1_es = reg1_stall_valid && es_we_1 && rf_raddr1==es_dest;
 assign stall_reg1_ms = reg1_stall_valid && ms_we_1 && rf_raddr1==ms_dest;
 assign stall_reg1_ws = reg1_stall_valid && ws_we_1 && rf_raddr1==ws_dest;

@@ -34,9 +34,13 @@ wire         br_taken;
 wire [ 31:0] br_target;
 assign {fs_bd, br_taken,br_target} = br_bus;
 
+wire        fs_exc;
+wire [ 7:0] fs_exc_type;
 wire [31:0] fs_inst;
 reg  [31:0] fs_pc;
 assign fs_to_ds_bus = {fs_bd   ,
+                       fs_exc  ,
+                       fs_exc_type,
                        fs_inst ,
                        fs_pc   };
 
@@ -83,5 +87,9 @@ assign inst_sram_addr  = nextpc;
 assign inst_sram_wdata = 32'b0;
 
 assign fs_inst         = inst_sram_rdata;
+
+//exc
+assign fs_exc      = 0;
+assign fs_exc_type = 8'h0;
 
 endmodule
