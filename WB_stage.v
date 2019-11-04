@@ -4,6 +4,7 @@ module wb_stage(
     input                           clk           ,
     input                           reset         ,
     input  [5:0]                    ext_int_in    ,
+    output                          int_happen    ,
     input                           flush         ,
     //allowin
     output                          ws_allowin    ,
@@ -116,7 +117,7 @@ CP0_reg u_CP0_reg(
     .bad_vaddr  (ws_badvaddr                ),
 
     .EPC        (ws_cp0_epc                 ),
-    .int_happen (                           ),
+    .int_happen (int_happen                 ),
     .eret       (ws_valid && ws_eret_flush  )
 );
 assign send_flush = ws_valid && (ws_eret_flush || ws_exc);

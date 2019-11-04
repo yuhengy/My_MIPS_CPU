@@ -25,6 +25,7 @@ always @(posedge clk) reset <= ~resetn;
 wire [5:0]   ext_int_in;
 assign ext_int_in = 6'h0;
 
+wire         int_happen;
 wire         flush;
 wire         ds_allowin;
 wire         es_allowin;
@@ -54,6 +55,7 @@ wire [`FORWARD_BUS_WD  -1:0] forward_ws_bus;
 if_stage if_stage(
     .clk            (clk            ),
     .reset          (reset          ),
+    .int_happen     (int_happen     ),
     .flush          (flush          ),
     //allowin
     .ds_allowin     (ds_allowin     ),
@@ -150,6 +152,7 @@ wb_stage wb_stage(
     .clk            (clk            ),
     .reset          (reset          ),
     .ext_int_in     (ext_int_in     ),
+    .int_happen     (int_happen     ),
     .flush          (flush          ),
     //allowin
     .ws_allowin     (ws_allowin     ),

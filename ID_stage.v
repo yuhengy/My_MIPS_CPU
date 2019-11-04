@@ -3,6 +3,7 @@
 module id_stage(
     input                          clk           ,
     input                          reset         ,
+    input                          int_happen    ,
     input                          flush         ,
     //allowin
     input                          es_allowin    ,
@@ -434,7 +435,7 @@ assign res_from_cp0 = inst_mfc0;
 assign cp0_wen      = inst_mtc0;
 assign eret_flush   = inst_eret;
 assign ds_exc       = old_fs_exc | inst_syscall | inst_break | inst_others;
-assign ds_exc_type  = {old_fs_exc_type[7:4], inst_syscall, inst_break, inst_others, old_fs_exc_type[0]};
+assign ds_exc_type  = {int_happen, old_fs_exc_type[6:4], inst_syscall, inst_break, inst_others, old_fs_exc_type[0]};
 assign ov_check     = inst_add | inst_addi | inst_sub;
 
 assign dest         = dst_is_r31 ? 5'd31 :
