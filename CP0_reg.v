@@ -114,7 +114,7 @@ always @(posedge clk)
 	else if(cp0_cause_bd_wen)
 		cp0_cause_bd  <= is_slot;
 
-assign cp0_cause_ti_set = cp0_count==cp0_compare;
+assign cp0_cause_ti_set = cp0_count[32:1]==cp0_compare;
 assign cp0_cause_ti_clear = cp0_wen && cp0_addr_d[`COMPARE_NUM] && cp0_addr[2:0]==3'h0;
 always @(posedge clk)
 	if(rst)
