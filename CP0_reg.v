@@ -54,7 +54,7 @@ decoder_5_32 u_dec2(.in(cp0_addr[7:3]), .out(cp0_addr_d));
 
 assign cp0_rdata = {32{cp0_addr_d[`BADVADDR_NUM]}} & cp0_badvaddr
                  | {32{cp0_addr_d[`STATUS_NUM]}}   & cp0_status
-                 | {32{cp0_addr_d[`COUNT_NUM]}}    & cp0_count
+                 | {32{cp0_addr_d[`COUNT_NUM]}}    & cp0_count[32:1]
                  | {32{cp0_addr_d[`COMPARE_NUM]}}  & cp0_compare
                  | {32{cp0_addr_d[`CAUSE_NUM]}}    & cp0_cause
                  | {32{cp0_addr_d[`EPC_NUM]}}      & cp0_epc;
