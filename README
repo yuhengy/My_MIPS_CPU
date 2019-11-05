@@ -13,7 +13,7 @@ The listing of this directory:
 |	|--regfile.v		General register file module
 |	|--alu.v			ALU module
 |	|--tools.v			Decoder modules; Multipier & Divider; 
+						Modules for LOAD/STORE; Forward merging
 |	|--CP0_reg.v        software and hardware access to CP0 reg
-Modules for LOAD/STORE; Forward merging
 |	|--README			This README file
 
