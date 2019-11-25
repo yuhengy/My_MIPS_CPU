@@ -123,11 +123,11 @@ always @(posedge clk) begin
     else if (fs_to_ds_valid && ds_allowin) begin
         buf_inst_valid <= 0;
     end
-    else if (!buf_inst_valid) begin
+    else if (inst_sram_data_ok) begin
         buf_inst_valid <= 1;
     end
 
-    if (!buf_inst_valid) begin
+    if (inst_sram_data_ok) begin
         buf_inst <= inst_sram_rdata;
     end
 end
