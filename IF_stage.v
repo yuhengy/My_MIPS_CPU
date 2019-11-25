@@ -14,10 +14,12 @@ module if_stage(
     output                         fs_to_ds_valid ,
     output [`FS_TO_DS_BUS_WD -1:0] fs_to_ds_bus   ,
     // inst sram interface
-    output        inst_sram_en   ,
+    output        inst_sram_req  ,
     output [ 3:0] inst_sram_wen  ,
     output [31:0] inst_sram_addr ,
     output [31:0] inst_sram_wdata,
+    input         inst_sram_addr_ok,
+    input         inst_sram_data_ok,
     input  [31:0] inst_sram_rdata
 );
 
@@ -28,6 +30,10 @@ wire        to_fs_valid;
 
 wire [31:0] seq_pc;
 wire [31:0] nextpc;
+
+reg         buf_npc_valid;
+reg  [31:0] buf_npc;
+wire [31:0] true_npc;
 
 wire         fs_bd;
 wire         br_taken;
@@ -44,6 +50,9 @@ assign fs_to_ds_bus = {fs_bd   ,
                        fs_inst ,
                        fs_pc   };
 
+reg         buf_inst_valid;
+reg  [31:0] buf_inst;
+
 wire         fs_adel;   // Address Error on IF
 
 //exc eret bus
@@ -59,9 +68,26 @@ assign nextpc       = nextpc_is_exc? 32'hbfc00380:
                       nextpc_is_epc? epc         :
                       br_taken     ? br_target   : 
                                      seq_pc      ; 
+assign true_npc = buf_npc_valid ? buf_npc : nextpc;
+
+always @(posedge clk) begin
+    if (reset) begin
+        buf_npc_valid <= 0;
+    end
+    else if (to_fs_valid && fs_allowin) begin
+        buf_npc_valid <= 0;
+    end
+    else if (!buf_npc_valid) begin
+        buf_npc_valid <= 1;
+    end
+
+    if (!buf_npc_valid) begin
+        buf_npc <= nextpc;
+    end
+end
 
 // IF stage
-assign fs_ready_go    = 1'b1;
+assign fs_ready_go    = inst_sram_data_ok;
 assign fs_allowin     = !fs_valid || fs_ready_go && ds_allowin;
 assign fs_to_ds_valid =  fs_valid && fs_ready_go;
 always @(posedge clk) begin
@@ -83,12 +109,28 @@ always @(posedge clk) begin
     end
 end
 
-assign inst_sram_en    = to_fs_valid && fs_allowin || flush;
+assign inst_sram_req   = to_fs_valid && fs_allowin || flush;
 assign inst_sram_wen   = 4'h0;
-assign inst_sram_addr  = nextpc;
+assign inst_sram_addr  = true_npc;
 assign inst_sram_wdata = 32'b0;
 
-assign fs_inst         = inst_sram_rdata;
+assign fs_inst         = buf_inst_valid ? buf_inst : inst_sram_rdata;
+
+always @(posedge clk) begin
+    if (reset) begin
+        buf_inst_valid <= 0;
+    end
+    else if (fs_to_ds_valid && ds_allowin) begin
+        buf_inst_valid <= 0;
+    end
+    else if (!buf_inst_valid) begin
+        buf_inst_valid <= 1;
+    end
+
+    if (!buf_inst_valid) begin
+        buf_inst <= inst_sram_rdata;
+    end
+end
 
 //exc
 assign fs_exc      = |fs_exc_type;

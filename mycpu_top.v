@@ -1,17 +1,25 @@
 module mycpu_top(
     input         clk,
     input         resetn,
-    // inst sram interface
-    output        inst_sram_en,
-    output [ 3:0] inst_sram_wen,
+    // inst sram-like interface
+    output        inst_sram_req,
+    output        inst_sram_wr,
+    output [ 1:0] inst_sram_size,
+    output [ 3:0] inst_sram_wstrb,
     output [31:0] inst_sram_addr,
     output [31:0] inst_sram_wdata,
+    input         inst_sram_addr_ok,
+    input         inst_sram_data_ok,
     input  [31:0] inst_sram_rdata,
     // data sram interface
-    output        data_sram_en,
-    output [ 3:0] data_sram_wen,
+    output        data_sram_req,
+    output        data_sram_wr,
+    output [ 1:0] data_sram_size,
+    output [ 3:0] data_sram_wstrb,
     output [31:0] data_sram_addr,
     output [31:0] data_sram_wdata,
+    input         data_sram_addr_ok,
+    input         data_sram_data_ok,
     input  [31:0] data_sram_rdata,
     // trace debug interface
     output [31:0] debug_wb_pc,
@@ -72,6 +80,10 @@ if_stage if_stage(
     .inst_sram_wdata(inst_sram_wdata),
     .inst_sram_rdata(inst_sram_rdata)
 );
+
+assign inst_sram_wr = 0;
+assign inst_sram_size = 2'b10;
+
 // ID stage
 id_stage id_stage(
     .clk            (clk            ),
