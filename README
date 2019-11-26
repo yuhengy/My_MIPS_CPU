@@ -4,7 +4,8 @@ Author: Yang Chengyuan
 The listing of this directory:
 |-myCPU/
 |	|--mycpu.h			Macro definitions for bus widths
-|	|--mycpu_top.v		Top module of CPU
+|	|--mycpu_top.v		Top module of CPU with AXI interface
+|	|--mycpu_top_sram_like.v	Top module of CPU with sram_like interface
 |	|--IF_stage.v		Instruction fetch stage module
 |	|--ID_stage.v		Instruction decoding stage module
 |	|--EXE_stage.v		Execution stage module
@@ -16,4 +17,6 @@ The listing of this directory:
 						Modules for LOAD/STORE; Forward merging
 |	|--CP0_reg.v        software and hardware access to CP0 reg
 |	|--README			This README file
-
+|	|-axi_ifc/
+|	|	|--cpu_axi_infertace.v	bridge
+|	|	|--queue.v				queue
