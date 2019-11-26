@@ -134,11 +134,16 @@ exe_stage exe_stage(
     .es_exc_eret_bus({ms_to_es_exc_eret_bus,
                       ws_to_es_exc_eret_bus}),
     // data sram interface
-    .data_sram_en   (data_sram_en   ),
-    .data_sram_wen  (data_sram_wen  ),
+    .data_sram_req  (data_sram_req  ),
+    .data_sram_wr   (data_sram_wr   ),
+    .data_sram_wen  (data_sram_wstrb),
     .data_sram_addr (data_sram_addr ),
-    .data_sram_wdata(data_sram_wdata)
+    .data_sram_wdata(data_sram_wdata),
+    .data_sram_addr_ok(data_sram_addr_ok)
 );
+
+assign data_sram_size = 2'b10;
+
 // MEM stage
 mem_stage mem_stage(
     .clk            (clk            ),
