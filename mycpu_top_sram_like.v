@@ -1,4 +1,5 @@
 module mycpu_top_sram_like(
+    input  [ 5:0] ext_int_in,
     input         clk,
     input         resetn,
     // inst sram-like interface
@@ -29,9 +30,6 @@ module mycpu_top_sram_like(
 );
 reg         reset;
 always @(posedge clk) reset <= ~resetn;
-
-wire [5:0]   ext_int_in;
-assign ext_int_in = 6'h0;
 
 wire         int_happen;
 wire         flush;
