@@ -112,7 +112,7 @@ end
 
 always @(posedge clk) begin
     if (reset) begin
-        data_sram_data_ok_r <= 0
+        data_sram_data_ok_r <= 0;
     end
     else begin
         data_sram_data_ok_r <= data_sram_data_ok;
