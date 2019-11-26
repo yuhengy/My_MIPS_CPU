@@ -35,10 +35,11 @@ reg         buf_npc_valid;
 reg  [31:0] buf_npc;
 wire [31:0] true_npc;
 
+wire         br_bd;
 wire         fs_bd;
 wire         br_taken;
 wire [ 31:0] br_target;
-assign {fs_bd, br_taken,br_target} = br_bus;
+assign {br_bd, br_taken,br_target} = br_bus;
 
 wire        fs_exc;
 wire [ 7:0] fs_exc_type;
@@ -52,6 +53,9 @@ assign fs_to_ds_bus = {fs_bd   ,
 
 reg         buf_inst_valid;
 reg  [31:0] buf_inst;
+
+reg         buf_bd;
+reg         buf_bd_valid;
 
 wire         fs_adel;   // Address Error on IF
 
@@ -139,8 +143,27 @@ always @(posedge clk) begin
     else if (inst_sram_data_ok_after_ignore /*&& !flush*/) begin
         buf_inst_valid <= 1;
     end
+
     if (inst_sram_data_ok_after_ignore) begin
         buf_inst <= inst_sram_rdata;
+    end
+end
+
+assign fs_bd = buf_bd_valid ? buf_bd : br_bd;
+
+always @(posedge clk) begin
+    if (reset) begin
+        buf_bd_valid <= 0;
+    end
+    else if (fs_to_ds_valid && ds_allowin || flush) begin
+        buf_bd_valid <= 0;
+    end
+    else if (!buf_bd_valid) begin
+        buf_bd_valid <= 1;
+    end
+
+    if (!buf_bd_valid) begin
+        buf_bd <= br_bd;
     end
 end
 
