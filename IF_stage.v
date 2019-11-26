@@ -77,17 +77,30 @@ always @(posedge clk) begin
     else if (to_fs_valid && fs_allowin) begin
         buf_npc_valid <= 0;
     end
-    else if (!buf_npc_valid) begin
+    else if (!buf_npc_valid && ds_allowin) begin
         buf_npc_valid <= 1;
     end
 
-    if (!buf_npc_valid) begin
+    if (!buf_npc_valid && ds_allowin) begin
         buf_npc <= nextpc;
     end
 end
 
+//when flush, may ignore next inst_sram_data_ok
+//limitaion: only one inst_req on fly
+reg ignore_next_inst_sram_data_ok;
+wire inst_sram_data_ok_after_ignore;
+always @(posedge clk)
+    if(reset)
+        ignore_next_inst_sram_data_ok <= 1'h0;
+    //not havegot_notgetting_last_inst_sram_data_ok && not getting_inst_sram_data_ok
+    else if(flush && !buf_inst_valid && !inst_sram_data_ok)
+        ignore_next_inst_sram_data_ok <= 1'h1;
+    else if(inst_sram_data_ok)
+        ignore_next_inst_sram_data_ok <= 1'h0;
+assign inst_sram_data_ok_after_ignoreflush = inst_sram_data_ok && !ignore_next_inst_sram_data_ok;
 // IF stage
-assign fs_ready_go    = inst_sram_data_ok;
+assign fs_ready_go    = (inst_sram_data_ok_after_ignore || buf_inst_valid) !flush;
 assign fs_allowin     = !fs_valid || fs_ready_go && ds_allowin;
 assign fs_to_ds_valid =  fs_valid && fs_ready_go;
 always @(posedge clk) begin
@@ -120,14 +133,13 @@ always @(posedge clk) begin
     if (reset) begin
         buf_inst_valid <= 0;
     end
-    else if (fs_to_ds_valid && ds_allowin) begin
+    else if (fs_to_ds_valid && ds_allowin || flush) begin
         buf_inst_valid <= 0;
     end
-    else if (inst_sram_data_ok) begin
+    else if (inst_sram_data_ok_after_ignore /*&& !flush*/) begin
         buf_inst_valid <= 1;
     end
-
-    if (inst_sram_data_ok) begin
+    if (inst_sram_data_ok_after_ignore) begin
         buf_inst <= inst_sram_rdata;
     end
 end

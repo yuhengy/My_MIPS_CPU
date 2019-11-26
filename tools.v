@@ -82,6 +82,8 @@ wire div_busy_w;
 reg  div_out_valid_r;
 wire div_out_valid_w;
 
+reg [63:0] div_result_r;
+
 wire        s_axis_divisor_tvalid_sgn  ;
 wire        s_axis_divisor_tvalid_usgn ;
 wire        s_axis_divisor_tready_sgn  ;
@@ -171,8 +173,15 @@ mydiv_usgn u_mydiv_usgn(
     .m_axis_dout_tvalid    (m_axis_dout_tvalid_usgn    )
 );
 
-assign div_result = {64{div_op[0]}} & {m_axis_dout_tdata_sgn[31:0], m_axis_dout_tdata_sgn[63:32]}
-                  | {64{div_op[1]}} & {m_axis_dout_tdata_usgn[31:0], m_axis_dout_tdata_usgn[63:32]};
+always @(posedge clk)
+    if(m_axis_dout_tvalid_sgn || m_axis_dout_tvalid_usgn)
+        div_result_r <= {64{div_op[0]}} & {m_axis_dout_tdata_sgn[31:0], m_axis_dout_tdata_sgn[63:32]}
+                      | {64{div_op[1]}} & {m_axis_dout_tdata_usgn[31:0], m_axis_dout_tdata_usgn[63:32]};
+
+assign div_result = (m_axis_dout_tvalid_sgn || m_axis_dout_tvalid_usgn)? 
+                   ({64{div_op[0]}} & {m_axis_dout_tdata_sgn[31:0], m_axis_dout_tdata_sgn[63:32]}
+                  | {64{div_op[1]}} & {m_axis_dout_tdata_usgn[31:0], m_axis_dout_tdata_usgn[63:32]})
+                   : div_result_r;
 
 endmodule
 
