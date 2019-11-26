@@ -207,7 +207,7 @@ divider u_divider(
     .div_in_valid   (es_res_from_div && !es_div_out_valid    ),
     .div_result     (es_div_result      ),
     .div_out_valid  (es_div_out_valid   ),
-    .div_out_ready  (1                  )
+    .div_out_ready  (es_allowin         )
 );
 
 assign es_hl_result = es_res_from_div ? es_div_result :
