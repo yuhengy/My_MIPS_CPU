@@ -22,6 +22,7 @@ module cpu_axi_interface #
     input                 inst_req    ,
     input                 inst_wr     ,
     input  [1:0]          inst_size   ,
+    input  [STRB_WID-1:0] inst_wstrb  ,
     input  [ADDR_WID-1:0] inst_addr   ,
     input  [DATA_WID-1:0] inst_wdata  ,
     output [DATA_WID-1:0] inst_rdata  ,
@@ -32,6 +33,7 @@ module cpu_axi_interface #
     input                 data_req    ,
     input                 data_wr     ,
     input  [1:0]          data_size   ,
+    input  [STRB_WID-1:0] data_wstrb  ,
     input  [ADDR_WID-1:0] data_addr   ,
     input  [DATA_WID-1:0] data_wdata  ,
     output [DATA_WID-1:0] data_rdata  ,
@@ -114,21 +116,7 @@ reg  [INST_RESPONSE_BUFF_NUM-1:0] inst_response_tok;  //init same index as queue
 //messy fix
 reg last_data_addr_ok_read;
 
-assign compute_strb[0] =   (data_addr[1:0] == 2'h0)
-                        || (data_addr[1:0] == 2'h1) && (data_size == 2'h1)
-                        || (data_addr[1:0] == 2'h2) && (data_size == 2'h2)
-                        || (data_addr[1:0] == 2'h3) && (data_size == 2'h2);
-assign compute_strb[1] =   (data_addr[1:0] == 2'h0) && (data_size == 2'h1)
-                        || (data_addr[1:0] == 2'h1)
-                        || (data_size == 2'h2);
-assign compute_strb[2] =   (data_addr[1:0] == 2'h2)
-                        || (data_size == 2'h2);
-assign compute_strb[3] =   (data_addr[1:0] == 2'h0) && (data_size == 2'h2)
-                        || (data_addr[1:0] == 2'h1) && (data_size == 2'h2)
-                        || (data_addr[1:0] == 2'h2) && (data_size == 2'h1)
-                        || (data_addr[1:0] == 2'h3);
-
-
+assign compute_strb = data_wstrb;
 
 assign axi_rid0_finish  = rvalid   && rready  && rid=={ID_WID{1'b0}};
 assign axi_rid1_finish  = rvalid   && rready  && rid=={{(ID_WID-1){1'b0}},1'b1};
