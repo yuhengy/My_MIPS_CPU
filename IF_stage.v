@@ -118,7 +118,7 @@ always @(posedge clk) begin
         fs_pc <= 32'hbfbffffc;  //trick: to make nextpc be 0xbfc00000 during reset 
     end
     else if (to_fs_valid && fs_allowin || flush) begin
-        fs_pc <= nextpc;
+        fs_pc <= true_npc;
     end
 end
 
