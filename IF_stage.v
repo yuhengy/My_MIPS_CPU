@@ -98,9 +98,9 @@ always @(posedge clk)
         ignore_next_inst_sram_data_ok <= 1'h1;
     else if(inst_sram_data_ok)
         ignore_next_inst_sram_data_ok <= 1'h0;
-assign inst_sram_data_ok_after_ignoreflush = inst_sram_data_ok && !ignore_next_inst_sram_data_ok;
+assign inst_sram_data_ok_after_ignore = inst_sram_data_ok && !ignore_next_inst_sram_data_ok;
 // IF stage
-assign fs_ready_go    = (inst_sram_data_ok_after_ignore || buf_inst_valid) !flush;
+assign fs_ready_go    = inst_sram_data_ok_after_ignore || buf_inst_valid;
 assign fs_allowin     = !fs_valid || fs_ready_go && ds_allowin;
 assign fs_to_ds_valid =  fs_valid && fs_ready_go;
 always @(posedge clk) begin
