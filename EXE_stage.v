@@ -32,6 +32,7 @@ wire        es_ready_go   ;
 
 reg  [`DS_TO_ES_BUS_WD -1:0] ds_to_es_bus_r;
 
+wire        es_store_op   ;
 wire        es_ov_check   ; // Need to check ALU Overflow
 wire        es_bd         ;
 wire        es_ms_ws_exc_eret;
@@ -130,7 +131,8 @@ assign es_res_from_mem = es_load_op;
 assign es_res_from_mul = es_mul_op[0] | es_mul_op[1];
 assign es_res_from_div = es_div_op[0] | es_div_op[1];
 
-assign es_to_ms_bus = {es_bd          ,  //103:103
+assign es_to_ms_bus = {es_store_op    ,  //104:104
+                       es_bd          ,  //103:103
                        es_exc         ,  //102:102
                        es_exc_type    ,  //94:101
                        es_eret_flush  ,  //93:93
@@ -232,6 +234,8 @@ assign data_sram_req   = (es_to_ms_valid && ms_allowin) && (es_load_op || (|es_i
 assign data_sram_wr    = |es_inst_store;
 assign data_sram_wen   = es_mem_we & {4{es_valid && !es_ms_ws_exc_eret}} ;
 assign data_sram_addr  = es_alu_result;
+
+assign es_store_op = |es_inst_store;
 
 wire    es_ades;    // Address Error on Store
 wire    es_ov;      // Overflow

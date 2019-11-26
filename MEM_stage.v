@@ -19,6 +19,7 @@ module mem_stage(
     //ms to es exc/eret bus
     output [                  1:0] ms_exc_eret_bus,
     //from data-sram
+    input                          data_sram_data_ok,
     input  [31                 :0] data_sram_rdata
 );
 
@@ -27,6 +28,7 @@ wire        ms_ready_go;
 
 reg [`ES_TO_MS_BUS_WD -1:0] es_to_ms_bus_r;
 
+wire        ms_store_op    ;
 wire        old_es_exc     ;
 wire [ 7:0] old_es_exc_type;
 wire        ms_bd          ;
@@ -45,7 +47,8 @@ wire [ 3:0] ms_gr_we       ;
 wire [ 4:0] ms_dest        ;
 wire [31:0] ms_alu_result  ;
 wire [31:0] ms_pc          ;
-assign {ms_bd          ,  //103:103
+assign {ms_store_op    ,  //104:104
+        ms_bd          ,  //103:103
         old_es_exc     ,  //102:102
         old_es_exc_type,  //101:94
         ms_eret_flush  ,  //93:93
@@ -81,12 +84,12 @@ assign ms_to_ws_bus = {ms_badvaddr    ,  //125:94
 
 assign stall_ms_bus = {ms_valid && ms_gr_we_1, {4{ms_valid}} & ms_gr_we,
                        ms_dest};
-assign forward_ms_bus = {ms_valid && !ms_res_from_cp0,
+assign forward_ms_bus = {ms_to_ws_valid && !ms_res_from_cp0,
                          ms_mem_alu_result};
 
 assign ms_exc_eret_bus = {2{ms_valid}} & {ms_exc, ms_eret_flush};
 
-assign ms_ready_go    = 1'b1;
+assign ms_ready_go    = !((ms_res_from_mem || ms_store_op) && !data_sram_data_ok);
 assign ms_allowin     = !ms_valid || ms_ready_go && ws_allowin;
 assign ms_to_ws_valid = ms_valid && ms_ready_go;
 always @(posedge clk) begin

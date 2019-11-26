@@ -164,6 +164,7 @@ mem_stage mem_stage(
     //exc eret
     .ms_exc_eret_bus(ms_to_es_exc_eret_bus),
     //from data-sram
+    .data_sram_data_ok(data_sram_data_ok),
     .data_sram_rdata(data_sram_rdata)
 );
 // WB stage
