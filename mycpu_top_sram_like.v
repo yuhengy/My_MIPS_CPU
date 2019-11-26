@@ -1,4 +1,4 @@
-module mycpu_top(
+module mycpu_top_sram_like(
     input         clk,
     input         resetn,
     // inst sram-like interface
