@@ -228,7 +228,8 @@ always @(posedge clk) begin
         lo <= lo_wdata;
 end
 
-assign data_sram_en    = 1'b1;
+assign data_sram_req   = (es_to_ms_valid && ms_allowin) && (es_load_op || (|es_inst_store));
+assign data_sram_wr    = |es_inst_store;
 assign data_sram_wen   = es_mem_we & {4{es_valid && !es_ms_ws_exc_eret}} ;
 assign data_sram_addr  = es_alu_result;
 
