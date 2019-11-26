@@ -68,13 +68,13 @@ assign nextpc       = nextpc_is_exc? 32'hbfc00380:
                       nextpc_is_epc? epc         :
                       br_taken     ? br_target   : 
                                      seq_pc      ; 
-assign true_npc = buf_npc_valid ? buf_npc : nextpc;
+assign true_npc = (buf_npc_valid&&!flush) ? buf_npc : nextpc;
 
 always @(posedge clk) begin
     if (reset) begin
         buf_npc_valid <= 0;
     end
-    else if (to_fs_valid && fs_allowin) begin
+    else if (to_fs_valid && fs_allowin || flush) begin
         buf_npc_valid <= 0;
     end
     else if (!buf_npc_valid && ds_allowin) begin
