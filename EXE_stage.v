@@ -19,10 +19,12 @@ module exe_stage(
     //ms, ws exc
     input  [                  3:0] es_exc_eret_bus,
     // data sram interface
-    output        data_sram_en   ,
+    output        data_sram_req  ,
+    output        data_sram_wr   ,
     output [ 3:0] data_sram_wen  ,
     output [31:0] data_sram_addr ,
-    output [31:0] data_sram_wdata
+    output [31:0] data_sram_wdata,
+    input         data_sram_addr_ok
 );
 
 reg         es_valid      ;
