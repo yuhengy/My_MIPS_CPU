@@ -68,6 +68,9 @@ wire [31:0] ms_badvaddr;
 wire [31:0] mem_result;
 wire [31:0] ms_mem_alu_result;
 
+reg         data_sram_data_ok_r;
+reg  [31:0] data_sram_rdata_r;
+
 assign ms_to_ws_bus = {ms_badvaddr    ,  //125:94
                        ms_bd          ,  // 93:93
                        ms_exc         ,  // 92:92
@@ -89,7 +92,7 @@ assign forward_ms_bus = {ms_to_ws_valid && !ms_res_from_cp0,
 
 assign ms_exc_eret_bus = {2{ms_valid}} & {ms_exc, ms_eret_flush};
 
-assign ms_ready_go    = !((ms_res_from_mem || ms_store_op) && !data_sram_data_ok);
+assign ms_ready_go    = !((ms_res_from_mem || ms_store_op) && !data_sram_data_ok_r);
 assign ms_allowin     = !ms_valid || ms_ready_go && ws_allowin;
 assign ms_to_ws_valid = ms_valid && ms_ready_go;
 always @(posedge clk) begin
@@ -104,6 +107,24 @@ always @(posedge clk) begin
     end
     if (es_to_ms_valid && ms_allowin) begin
         es_to_ms_bus_r <= es_to_ms_bus;
+    end
+end
+
+always @(posedge clk) begin
+    if (reset) begin
+        data_sram_data_ok_r <= 0
+    end
+    else begin
+        data_sram_data_ok_r <= data_sram_data_ok;
+    end
+end
+
+always @(posedge clk) begin
+    if (reset) begin
+        data_sram_rdata_r <= 32'b0;
+    end
+    else begin
+        data_sram_rdata_r <= data_sram_rdata;
     end
 end
 
@@ -122,7 +143,7 @@ ld_decode u_ld_decode(
 ld_select u_ld_select(
     .ld_rshift_op    (ms_ld_rshift_op),
     .ld_extd_op      (ms_ld_extd_op  ),
-    .data_sram_rdata (data_sram_rdata),
+    .data_sram_rdata (data_sram_rdata_r),
 
     .mem_result      (mem_result     )
 );
