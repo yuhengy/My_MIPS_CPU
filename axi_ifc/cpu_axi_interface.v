@@ -343,7 +343,8 @@ queue_wid1_tok(
 queue #(
     .QUEUE_WID        (DATA_WID),
     .QUEUE_ELEMENT_NUM(INST_RESPONSE_BUFF_NUM),
-    .FUNC_RANDOM_IN(1))
+    .FUNC_RANDOM_IN(1),
+    .FUNC_FORWARD(0))
 queue_inst_response_buff(
     .clk(clk),
     .rst(!resetn),
@@ -371,7 +372,8 @@ queue_inst_response_buff(
 queue #(
     .QUEUE_WID        (DATA_WID),
     .QUEUE_ELEMENT_NUM(DATA_REORDER_BUFF_NUM),
-    .FUNC_RANDOM_IN(1))
+    .FUNC_RANDOM_IN(1),
+    .FUNC_FORWARD(0))
 queue_data_reorder_buff(
     .clk(clk),
     .rst(!resetn),

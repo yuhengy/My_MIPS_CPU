@@ -122,7 +122,7 @@ always @(posedge clk)
         div_busy_r <= 1'h0;
     else if(div_in_valid)
         div_busy_r <= 1'h1;
-    else if(div_out_valid_w && div_out_ready)
+    else if(div_out_valid_w && div_out_ready || flush_r && div_out_valid_w)
         div_busy_r <= 1'h0;
 assign  div_busy_w  = div_busy_r && !(div_out_valid_w && div_out_ready);
 

@@ -204,7 +204,7 @@ divider u_divider(
     .div_op         (es_div_op          ),
     .divisor        (es_rt_value        ),
     .dividend       (es_rs_value        ),
-    .div_in_valid   (es_res_from_div && !es_div_out_valid    ),
+    .div_in_valid   (es_res_from_div && !es_div_out_valid && es_valid),
     .div_result     (es_div_result      ),
     .div_out_valid  (es_div_out_valid   ),
     .div_out_ready  (ms_allowin         )
