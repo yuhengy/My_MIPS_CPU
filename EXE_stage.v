@@ -32,6 +32,9 @@ wire        es_ready_go   ;
 
 reg  [`DS_TO_ES_BUS_WD -1:0] ds_to_es_bus_r;
 
+wire        es_inst_tlbr  ;
+wire        es_inst_tlbwi ;
+wire        es_inst_tlbp  ;
 wire        es_store_op   ;
 wire        es_ov_check   ; // Need to check ALU Overflow
 wire        es_bd         ;
@@ -70,7 +73,10 @@ wire [15:0] es_imm        ;
 wire [31:0] es_rs_value   ;
 wire [31:0] es_rt_value   ;
 wire [31:0] es_pc         ;
-assign {es_ov_check    ,  //184:184
+assign {es_inst_tlbr   ,  //187:187
+        es_inst_tlbwi  ,  //186:186
+        es_inst_tlbp   ,  //185:185
+        es_ov_check    ,  //184:184
         es_bd          ,  //183:183
         old_ds_exc     ,  //182:182
         old_ds_exc_type,  //181:174

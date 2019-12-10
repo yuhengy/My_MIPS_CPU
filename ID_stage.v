@@ -232,7 +232,10 @@ assign br_bus       = {br_bd    ,   //33:33
                        br_target    //31: 0 
                       };
 
-assign ds_to_es_bus = {ov_check    ,  //184:184
+assign ds_to_es_bus = {inst_tlbr   ,  //187:187
+                       inst_tlbwi  ,  //186:186
+                       inst_tlbp   ,  //185:185
+                       ov_check    ,  //184:184
                        ds_bd       ,  //183:183
                        ds_exc      ,  //182:182
                        ds_exc_type ,  //181:174
@@ -371,6 +374,8 @@ assign inst_syscall= op_d[6'h00] & func_d[6'h0c];
 assign inst_break  = op_d[6'h00] & func_d[6'h0d];
 
 assign inst_tlbp   = op_d[6'h10] & func_d[6'h08] & rs_d[5'h10] & rt_d[5'h00] & rd_d[5'h00] & sa_d[5'h00];
+assign inst_tlbwi  = op_d[6'h10] & func_d[6'h02] & rs_d[5'h10] & rt_d[5'h00] & rd_d[5'h00] & sa_d[5'h00];
+assign inst_tlbr   = op_d[6'h10] & func_d[6'h01] & rs_d[5'h10] & rt_d[5'h00] & rd_d[5'h00] & sa_d[5'h00];
 
 assign inst_others = ~(inst_add   | inst_addi  | inst_addu | inst_sub  | inst_subu
                      | inst_mult  | inst_multu | inst_div  | inst_divu
@@ -386,7 +391,8 @@ assign inst_others = ~(inst_add   | inst_addi  | inst_addu | inst_sub  | inst_su
                      | inst_j     | inst_jal   | inst_jr   | inst_jalr
 
                      | inst_mfhi  | inst_mflo  | inst_mthi | inst_mtlo
-                     | inst_eret  | inst_mfc0  | inst_mtc0 | inst_syscall | inst_break);
+                     | inst_eret  | inst_mfc0  | inst_mtc0 | inst_syscall | inst_break
+                     | inst_tlbp  | inst_tlbwi | inst_tlbr );
 
 assign alu_op[ 0] = inst_add | inst_addi | inst_addu | inst_addiu
                   | load_op  | store_op  | inst_jal  | inst_jalr | inst_bgezal | inst_bltzal;
