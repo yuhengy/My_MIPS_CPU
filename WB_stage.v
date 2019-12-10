@@ -48,7 +48,7 @@ wire        ws_ready_go;
 
 reg [`MS_TO_WS_BUS_WD -1:0] ms_to_ws_bus_r;
 
-wire        ws_tlbp_index  ;
+wire [31:0] ws_tlbp_index  ;
 wire        ws_entryhi_wen ;
 wire        ws_inst_tlbr   ;
 wire        ws_inst_tlbwi  ;
