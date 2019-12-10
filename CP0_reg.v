@@ -1,5 +1,9 @@
 `include "mycpu.h"
-module CP0_reg(
+module CP0_reg #
+(
+	parameter TLBNUM = 16
+)
+(
 	input        clk,
 	input        rst,
 
