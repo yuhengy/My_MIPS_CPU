@@ -24,7 +24,9 @@ module CP0_reg #
     input         eret,
 
     //tlbp
+    input         tlbp_wen,
     output [31:0] tlbp_entryhi,
+    input  [31:0] tlbp_index,
     //input Index use cp0_wdata
 
     //tlbr
@@ -206,7 +208,9 @@ assign tlbwi_entry  = {cp0_entryhi [31:13],
 	                   cp0_entrylo1[25: 1]};
 
 always @(posedge clk)
-	if(cp0_wen && cp0_addr_d[`INDEX_NUM] && cp0_addr[2:0]==3'h0)
+	if(tlbp_wen)
+		cp0_index <= tlbp_index;
+	else if(cp0_wen && cp0_addr_d[`INDEX_NUM] && cp0_addr[2:0]==3'h0)
 		cp0_index[$clog2(TLBNUM)-1:0] <= cp0_wdata[$clog2(TLBNUM)-1:0];
 
 always @(posedge clk)

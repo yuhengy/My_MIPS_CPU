@@ -48,6 +48,7 @@ wire        ws_ready_go;
 
 reg [`MS_TO_WS_BUS_WD -1:0] ms_to_ws_bus_r;
 
+wire        ws_tlbp_index  ;
 wire        ws_entryhi_wen ;
 wire        ws_inst_tlbr   ;
 wire        ws_inst_tlbwi  ;
@@ -65,7 +66,8 @@ wire [ 4:0] ws_dest        ;
 wire [31:0] ws_mem_alu_result;
 wire [31:0] ws_final_result;
 wire [31:0] ws_pc          ;
-assign {ws_entryhi_wen ,  //129:129
+assign {ws_tlbp_index  ,  //161:130
+        ws_entryhi_wen ,  //129:129
         ws_inst_tlbr   ,  //128:128
         ws_inst_tlbwi  ,  //127:127
         ws_inst_tlbp   ,  //126:126
@@ -129,8 +131,7 @@ CP0_reg u_CP0_reg(
     .clk         (clk                        ),
     .rst         (reset                      ),
 
-    .cp0_addr    ((ws_inst_tlbp)? {`INDEX_NUM, 3'h0}:
-                                  ws_cp0_addr),
+    .cp0_addr    (ws_cp0_addr                ),
     .cp0_wen     (ws_valid && ws_cp0_wen     ),
     .cp0_wdata   (ws_mem_alu_result          ),
 
@@ -146,7 +147,9 @@ CP0_reg u_CP0_reg(
     .int_happen  (int_happen                 ),
     .eret        (ws_valid && ws_eret_flush  ),
 
+    .tlbp_wen    (ws_inst_tlbp),
     .tlbp_entryhi(ws_entryhi),
+    .tlbp_index  (ws_tlbp_index),
     .tlb_index   (ws_tlb_index),
     .tlbr_wen    (ws_inst_tlbr),
     .tlbr_entry  (ws_tlbr_entry),
