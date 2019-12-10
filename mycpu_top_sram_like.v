@@ -1,4 +1,7 @@
-module mycpu_top_sram_like(
+module mycpu_top_sram_like # (
+    parameter TLBNUM = 16
+)
+(
     input  [ 5:0] ext_int_in,
     input         clk,
     input         resetn,
@@ -308,7 +311,7 @@ tlb u_tlb(
     .r_pfn1     (tlb_r_entry[24: 5] ),
     .r_c1       (tlb_r_entry[ 4: 2] ),
     .r_d1       (tlb_r_entry[ 1]    ),
-    .r_v1       (tlb_r_entry[ 0]    ),
+    .r_v1       (tlb_r_entry[ 0]    )
 );
 
 assign tlb_s0_vpn2 = 19'b0;
