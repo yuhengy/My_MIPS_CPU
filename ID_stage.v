@@ -446,7 +446,7 @@ assign ds_lo_we     = inst_mult  | inst_multu | inst_div   | inst_divu  | inst_m
 assign hl_from_rs   = inst_mthi  | inst_mtlo;
 
 assign res_from_cp0 = inst_mfc0;
-assign cp0_wen      = inst_mtc0  | inst_tlbp;
+assign cp0_wen      = inst_mtc0;
 assign eret_flush   = inst_eret;
 assign ds_exc       = old_fs_exc | inst_syscall | inst_break | inst_others | int_happen;
 assign ds_exc_type  = {int_happen, old_fs_exc_type[6:4], inst_syscall, inst_break, inst_others, old_fs_exc_type[0]};

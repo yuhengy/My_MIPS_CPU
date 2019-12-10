@@ -8,7 +8,7 @@
     `define FS_TO_DS_BUS_WD 74
     `define DS_TO_ES_BUS_WD 188
     `define ES_TO_MS_BUS_WD 140
-    `define MS_TO_WS_BUS_WD 130
+    `define MS_TO_WS_BUS_WD 162
     `define WS_TO_RF_BUS_WD 42
 
     `define BADVADDR_NUM 5'd8

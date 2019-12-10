@@ -78,8 +78,10 @@ wire [31:0] ms_badvaddr;
 wire [31:0] mem_result;
 wire [31:0] ms_mem_alu_result;
 wire        ms_entryhi_wen;
+wire [31:0] ms_tlbp_index;
 
-assign ms_to_ws_bus = {ms_entryhi_wen ,  //129:129
+assign ms_to_ws_bus = {ms_tlbp_index  ,  //161:130
+                       ms_entryhi_wen ,  //129:129
                        ms_inst_tlbr   ,  //128:128
                        ms_inst_tlbwi  ,  //127:127
                        ms_inst_tlbp   ,  //126:126
@@ -103,6 +105,8 @@ assign forward_ms_bus = {ms_to_ws_valid && !ms_res_from_cp0,
                          ms_mem_alu_result};
 
 assign ms_exc_eret_bus = {2{ms_valid}} & {ms_exc, ms_eret_flush};
+
+assign ms_tlbp_index = ms_cp0_index_wdata;
 
 assign ms_ready_go    = !((ms_res_from_mem || ms_store_op) && !data_sram_data_ok);
 assign ms_allowin     = !ms_valid || ms_ready_go && ws_allowin;
@@ -143,7 +147,6 @@ ld_select u_ld_select(
 );
 
 assign ms_mem_alu_result = ms_res_from_mem ? mem_result :
-                           ms_inst_tlbp ? ms_cp0_index_wdata
                                         : ms_alu_result;
 
 assign ms_entryhi_hazard = ms_valid && ms_entryhi_wen;
