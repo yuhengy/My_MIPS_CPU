@@ -88,6 +88,21 @@ wire [  TLB_ENTRY_WD-1:0]   tlb_r_entry;
 
 wire tlbp_valid;
 
+wire ws_send_flush;
+reg tlb_flush_r;
+wire ws_tlb_flush;
+
+assign flush = ws_send_flush || tlb_flush_r;
+
+always @(posedge clk) begin
+    if (reset) begin
+        tlb_flush_r <= 0;
+    end
+    else begin
+        tlb_flush_r <= ws_tlb_flush;
+    end
+end
+
 // IF stage
 if_stage if_stage(
     .clk            (clk            ),
@@ -220,7 +235,8 @@ wb_stage wb_stage(
     //ws to id stall
     .stall_ws_bus   (stall_ws_bus   ),
     .forward_ws_bus (forward_ws_bus ),
-    .send_flush     (flush          ),
+    .send_flush     (ws_send_flush  ),
+    .send_tlb_flush (ws_tlb_flush   ),
     //exc eret
     .ws_exc_eret_bus(ws_to_es_exc_eret_bus),
     .exc_eret_bus   (exc_eret_bus   ),
