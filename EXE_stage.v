@@ -142,6 +142,7 @@ wire [31:0] hi_wdata;
 wire [31:0] lo_wdata;
 
 wire [31:0] es_cp0_index_wdata;
+wire [ 7:0] es_cp0_real_addr;
 
 assign es_res_from_mem = es_load_op;
 assign es_res_from_mul = es_mul_op[0] | es_mul_op[1];
@@ -153,6 +154,8 @@ assign es_cp0_index_wdata = {
     {(31-$clog2(TLBNUM)){1'b0}},
     tlbp_index
 }
+assign es_cp0_real_addr = es_inst_tlbp ? {INDEX_NUM, 3'd0} : // Index
+                                        es_cp0_addr;
 
 assign es_to_ms_bus = {es_inst_tlbr   ,  //139:139
                        es_inst_tlbwi  ,  //138:138
@@ -165,7 +168,7 @@ assign es_to_ms_bus = {es_inst_tlbr   ,  //139:139
                        es_eret_flush  ,  //93:93
                        es_cp0_wen     ,  //92:92
                        es_res_from_cp0,  //91:91
-                       es_cp0_addr    ,  //90:83
+                       es_cp0_real_addr,  //90:83
                        es_res_from_mem,  //82:82
                        es_inst_load   ,  //81:75
                        es_ld_extd_op  ,  //74:70
