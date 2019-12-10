@@ -57,6 +57,55 @@ wire [`FORWARD_BUS_WD  -1:0] forward_es_bus;
 wire [`FORWARD_BUS_WD  -1:0] forward_ms_bus;
 wire [`FORWARD_BUS_WD  -1:0] forward_ws_bus;
 
+wire [              18:0]   tlb_s0_vpn2;
+wire                        tlb_s0_odd_page;
+wire [               7:0]   tlb_s0_asid;
+wire                        tlb_s0_found;
+wire [$clog2(TLBNUM)-1:0]   tlb_s0_index;
+wire [              19:0]   tlb_s0_pfn;
+wire [               2:0]   tlb_s0_c;
+wire                        tlb_s0_d;
+wire                        tlb_s0_v;
+
+wire [              18:0]   tlb_s1_vpn2;
+wire                        tlb_s1_odd_page;
+wire [               7:0]   tlb_s1_asid;
+wire                        tlb_s1_found;
+wire [$clog2(TLBNUM)-1:0]   tlb_s1_index;
+wire [              19:0]   tlb_s1_pfn;
+wire [               2:0]   tlb_s1_c;
+wire                        tlb_s1_d;
+wire                        tlb_s1_v;
+
+wire                        tlb_we;
+wire [$clog2(TLBNUM)-1:0]   tlb_w_index;
+wire [              18:0]   tlb_w_vpn2;
+wire [               7:0]   tlb_w_asid;
+wire                        tlb_w_g;
+wire [              19:0]   tlb_w_pfn0;
+wire [               2:0]   tlb_w_c0;
+wire                        tlb_w_d0;
+wire                        tlb_w_v0;
+wire [              19:0]   tlb_w_pfn1;
+wire [               2:0]   tlb_w_c1;
+wire                        tlb_w_d1;
+wire                        tlb_w_v1;
+
+wire [$clog2(TLBNUM)-1:0]   tlb_r_index;
+wire [              18:0]   tlb_r_vpn2;
+wire [               7:0]   tlb_r_asid;
+wire                        tlb_r_g;
+wire [              19:0]   tlb_r_pfn0;
+wire [               2:0]   tlb_r_c0;
+wire                        tlb_r_d0;
+wire                        tlb_r_v0;
+wire [              19:0]   tlb_r_pfn1;
+wire [               2:0]   tlb_r_c1;
+wire                        tlb_r_d1;
+wire                        tlb_r_v1;
+
+wire tlbp_valid;
+
 // IF stage
 if_stage if_stage(
     .clk            (clk            ),
@@ -131,6 +180,10 @@ exe_stage exe_stage(
     //exc eret
     .es_exc_eret_bus({ms_to_es_exc_eret_bus,
                       ws_to_es_exc_eret_bus}),
+    // TLB probe
+    .tlbp_valid     (tlbp_valid     ),
+    .tlbp_found     (tlb_s1_found   ),
+    .tlbp_index     (tlb_s1_index   ),
     // data sram interface
     .data_sram_req  (data_sram_req  ),
     .data_sram_wr   (data_sram_wr   ),
@@ -194,58 +247,63 @@ wb_stage wb_stage(
 );
 
 tlb u_tlb(
-    .clk        (clk    ),
+    .clk        (clk            ),
 
     // search port 0
-    .s0_vpn2
-    .s0_odd_page
-    .s0_asid    
-    .s0_found
-    .s0_index
-    .s0_pfn
-    .s0_c
-    .s0_d
-    .s0_v
+    .s0_vpn2    (tlb_s0_vpn2    ),
+    .s0_odd_page(tlb_s0_odd_page),
+    .s0_asid    (tlb_s0_asid    ),
+    .s0_found   (tlb_s0_found   ),
+    .s0_index   (tlb_s0_index   ),
+    .s0_pfn     (tlb_s0_pfn     ),
+    .s0_c       (tlb_s0_c       ),
+    .s0_d       (tlb_s0_d       ),
+    .s0_v       (tlb_s0_v       ),
 
     // search port 1
-    .s1_vpn2
-    .s1_odd_page
-    .s1_asid
-    .s1_found
-    .s1_index
-    .s1_pfn
-    .s1_c
-    .s1_d
-    .s1_v
+    .s1_vpn2    (tlb_s1_vpn2    ),
+    .s1_odd_page(tlb_s1_odd_page),
+    .s1_asid    (tlb_s1_asid    ),
+    .s1_found   (tlb_s1_found   ),
+    .s1_index   (tlb_s1_index   ),
+    .s1_pfn     (tlb_s1_pfn     ),
+    .s1_c       (tlb_s1_c       ),
+    .s1_d       (tlb_s1_d       ),
+    .s1_v       (tlb_s1_v       ),
 
     // write port
-    .we
-    .w_index
-    .w_vpn2
-    .w_asid
-    .w_g
-    .w_pfn0
-    .w_c0
-    .w_d0
-    .w_v0
-    .w_pfn1
-    .w_c1
-    .w_d1
-    .w_v1
+    .we         (tlb_we         ),
+    .w_index    (tlb_w_index    ),
+    .w_vpn2     (tlb_w_vpn2     ),
+    .w_asid     (tlb_w_asid     ),
+    .w_g        (tlb_w_g        ),
+    .w_pfn0     (tlb_w_pfn0     ),
+    .w_c0       (tlb_w_c0       ),
+    .w_d0       (tlb_w_d0       ),
+    .w_v0       (tlb_w_v0       ),
+    .w_pfn1     (tlb_w_pfn1     ),
+    .w_c1       (tlb_w_c1       ),
+    .w_d1       (tlb_w_d1       ),
+    .w_v1       (tlb_w_v1       ),
 
     // read port
-    .r_index
-    .r_vpn2
-    .r_asid
-    .r_g
-    .r_pfn0
-    .r_c0
-    .r_d0
-    .r_v0
-    .r_pfn1
-    .r_c1
-    .r_d1
-    .r_v1
+    .r_index    (tlb_r_index    ),
+    .r_vpn2     (tlb_r_vpn2     ),
+    .r_asid     (tlb_r_asid     ),
+    .r_g        (tlb_r_g        ),
+    .r_pfn0     (tlb_r_pfn0     ),
+    .r_c0       (tlb_r_c0       ),
+    .r_d0       (tlb_r_d0       ),
+    .r_v0       (tlb_r_v0       ),
+    .r_pfn1     (tlb_r_pfn1     ),
+    .r_c1       (tlb_r_c1       ),
+    .r_d1       (tlb_r_d1       ),
+    .r_v1       (tlb_r_v1       ),
 );
+
+// TLBP ?
+assign tlb_s1_vpn2 = ;
+assign tlb_s1_odd_page = ;
+assign tlb_s1_asid = ;
 
 endmodule

@@ -1,6 +1,10 @@
 `include "mycpu.h"
 
-module exe_stage(
+module exe_stage #
+(
+    parameter TLBNUM = 16
+)
+(
     input                          clk           ,
     input                          reset         ,
     input                          flush         ,
@@ -18,6 +22,10 @@ module exe_stage(
     output [`FORWARD_BUS_WD  -1:0] forward_es_bus,
     //ms, ws exc
     input  [                  3:0] es_exc_eret_bus,
+    // TLB Probe
+    output                      tlbp_valid,
+    input                       tlbp_found,
+    input  [$clog2(TLBNUM)-1:0] tlbp_index,
     // data sram interface
     output        data_sram_req  ,
     output        data_sram_wr   ,
@@ -133,11 +141,24 @@ wire        lo_we;
 wire [31:0] hi_wdata;
 wire [31:0] lo_wdata;
 
+wire [31:0] es_cp0_index_wdata;
+
 assign es_res_from_mem = es_load_op;
 assign es_res_from_mul = es_mul_op[0] | es_mul_op[1];
 assign es_res_from_div = es_div_op[0] | es_div_op[1];
 
-assign es_to_ms_bus = {es_store_op    ,  //104:104
+assign tlbp_valid = es_inst_tlbp;
+assign es_cp0_index_wdata = {
+    !tlbp_found,
+    {(31-$clog2(TLBNUM)){1'b0}},
+    tlbp_index
+}
+
+assign es_to_ms_bus = {es_inst_tlbr   ,  //139:139
+                       es_inst_tlbwi  ,  //138:138
+                       es_inst_tlbp   ,  //137:137
+                       es_cp0_index_wdata,//136:105
+                       es_store_op    ,  //104:104
                        es_bd          ,  //103:103
                        es_exc         ,  //102:102
                        es_exc_type    ,  //94:101

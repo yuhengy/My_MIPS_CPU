@@ -28,6 +28,10 @@ wire        ms_ready_go;
 
 reg [`ES_TO_MS_BUS_WD -1:0] es_to_ms_bus_r;
 
+wire        ms_inst_tlbr   ;
+wire        ms_inst_tlbwi  ;
+wire        ms_inst_tlbp   ;
+wire [31:0] ms_cp0_index_wdata;
 wire        ms_store_op    ;
 wire        old_es_exc     ;
 wire [ 7:0] old_es_exc_type;
@@ -47,7 +51,11 @@ wire [ 3:0] ms_gr_we       ;
 wire [ 4:0] ms_dest        ;
 wire [31:0] ms_alu_result  ;
 wire [31:0] ms_pc          ;
-assign {ms_store_op    ,  //104:104
+assign {ms_inst_tlbr   ,  //139:139
+        ms_inst_tlbwi  ,  //138:138
+        ms_inst_tlbp   ,  //137:137
+        ms_cp0_index_wdata,//136:105
+        ms_store_op    ,  //104:104
         ms_bd          ,  //103:103
         old_es_exc     ,  //102:102
         old_es_exc_type,  //101:94
