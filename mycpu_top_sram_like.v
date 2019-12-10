@@ -82,9 +82,9 @@ wire                        tlb_s1_v;
 wire [$clog2(TLBNUM)-1:0]   tlb_wr_index;
 
 wire                        tlb_we;
-wire [  TLB_ENTRY_WD-1:0]   tlb_w_entry;
+wire [ `TLB_ENTRY_WD-1:0]   tlb_w_entry;
 
-wire [  TLB_ENTRY_WD-1:0]   tlb_r_entry;
+wire [ `TLB_ENTRY_WD-1:0]   tlb_r_entry;
 
 wire tlbp_valid;
 

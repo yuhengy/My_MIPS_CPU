@@ -154,8 +154,8 @@ assign es_cp0_index_wdata = {
     !tlbp_found,
     {(31-$clog2(TLBNUM)){1'b0}},
     tlbp_index
-}
-assign es_cp0_real_addr = es_inst_tlbp ? {INDEX_NUM, 3'd0} : // Index
+};
+assign es_cp0_real_addr = es_inst_tlbp ? {`INDEX_NUM, 3'd0} : // Index
                                         es_cp0_addr;
 
 assign es_to_ms_bus = {es_inst_tlbr   ,  //139:139
