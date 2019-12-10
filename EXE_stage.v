@@ -26,6 +26,7 @@ module exe_stage #
     output                      tlbp_valid,
     input                       tlbp_found,
     input  [$clog2(TLBNUM)-1:0] tlbp_index,
+    input  [               1:0] entryhi_stall_bus,
     // data sram interface
     output        data_sram_req  ,
     output        data_sram_wr   ,
@@ -183,7 +184,8 @@ assign stall_es_bus = {{5{es_valid && es_gr_we}},
 assign forward_es_bus = {es_valid && !es_res_from_mem && !es_res_from_cp0,
                          es_alu_result};
 
-assign es_ready_go    = !(es_res_from_div && !es_div_out_valid);
+assign es_ready_go    = !((es_res_from_div && !es_div_out_valid)
+                        ||(es_inst_tlbp && |(entryhi_stall_bus)));
 assign es_allowin     = !es_valid || es_ready_go && ms_allowin;
 assign es_to_ms_valid =  es_valid && es_ready_go;
 always @(posedge clk) begin

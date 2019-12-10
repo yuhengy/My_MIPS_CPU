@@ -56,6 +56,7 @@ wire [`STALL_BUS_WD    -1:0] stall_ws_bus;
 wire [`FORWARD_BUS_WD  -1:0] forward_es_bus;
 wire [`FORWARD_BUS_WD  -1:0] forward_ms_bus;
 wire [`FORWARD_BUS_WD  -1:0] forward_ws_bus;
+wire [                  1:0] entryhi_stall_bus;
 
 wire [              18:0]   tlb_s0_vpn2;
 wire                        tlb_s0_odd_page;
@@ -184,6 +185,7 @@ exe_stage exe_stage(
     .tlbp_valid     (tlbp_valid     ),
     .tlbp_found     (tlb_s1_found   ),
     .tlbp_index     (tlb_s1_index   ),
+    .entryhi_stall_bus(entryhi_stall_bus),
     // data sram interface
     .data_sram_req  (data_sram_req  ),
     .data_sram_wr   (data_sram_wr   ),
@@ -214,6 +216,8 @@ mem_stage mem_stage(
     .forward_ms_bus (forward_ms_bus ),
     //exc eret
     .ms_exc_eret_bus(ms_to_es_exc_eret_bus),
+    // TLBP: stall
+    .ms_entryhi_hazard(entryhi_stall_bus[0]),
     //from data-sram
     .data_sram_data_ok(data_sram_data_ok),
     .data_sram_rdata(data_sram_rdata)
@@ -239,6 +243,8 @@ wb_stage wb_stage(
     //exc eret
     .ws_exc_eret_bus(ws_to_es_exc_eret_bus),
     .exc_eret_bus   (exc_eret_bus   ),
+    // TLBP: stall
+    .ws_entryhi_hazard(entryhi_stall_bus[1]),
     //trace debug interface
     .debug_wb_pc      (debug_wb_pc      ),
     .debug_wb_rf_wen  (debug_wb_rf_wen  ),
