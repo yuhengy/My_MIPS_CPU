@@ -215,6 +215,10 @@ wire        inst_syscall;
 wire        inst_break;
 wire        inst_others;
 
+wire        inst_tlbp;
+wire        inst_tlbwi;
+wire        inst_tlbr;
+
 wire        dst_is_r31;  
 wire        dst_is_rt;   
 
@@ -365,6 +369,9 @@ assign inst_mfc0   = op_d[6'h10] & rs_d[5'h00]   & sa_d[5'h00] & (func[5:3] == 3
 assign inst_mtc0   = op_d[6'h10] & rs_d[5'h04]   & sa_d[5'h00] & (func[5:3] == 3'h0);
 assign inst_syscall= op_d[6'h00] & func_d[6'h0c];
 assign inst_break  = op_d[6'h00] & func_d[6'h0d];
+
+assign inst_tlbp   = op_d[6'h10] & func_d[6'h08] & rs_d[5'h10] & rt_d[5'h00] & rd_d[5'h00] & sa_d[5'h00];
+
 assign inst_others = ~(inst_add   | inst_addi  | inst_addu | inst_sub  | inst_subu
                      | inst_mult  | inst_multu | inst_div  | inst_divu
                      | inst_slt   | inst_slti  | inst_sltu | inst_sltiu
