@@ -17,4 +17,9 @@
     `define STATUS_NUM   12
     `define CAUSE_NUM    13
     `define EPC_NUM      14
+
+    `define INDEX_NUM    0
+    `define ENTRYLO0_NUM 2
+    `define ENTRYLO1_NUM 3
+    `define ENTRYHI_NUM  10
 `endif

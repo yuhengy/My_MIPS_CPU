@@ -21,9 +21,22 @@ module CP0_reg #
     output [31:0] EPC,
 
     output        int_happen,
+    input         eret,
 
-    input         eret
+    //tlbp
+    output [31:0] tlbp_entryhi,
+    //input Index use cp0_wdata
+
+    //tlbr
+    //output Index use cp0_rdata
+    input         tlbr_wen,
+    input  [77:0] tlbr_entry,
+
+    //tlbwi
+    //output Index use cp0_rdata
+    output [77:0] tlbwi_entry
 );
+
 wire [31:0] cp0_addr_d;
 wire        int, rine, rdae, ades, sys, bp, ri, ov;
 wire        any_exc;
@@ -52,6 +65,11 @@ wire        cp0_badvaddr_wen;
 reg  [32:0] cp0_count;
 reg  [31:0] cp0_compare;
 
+//tlb
+reg  [31:0] cp0_index;
+reg  [31:0] cp0_entryhi;
+reg  [31:0] cp0_entrylo1;
+reg  [31:0] cp0_entrylo0;
 
 //soft access
 decoder_5_32 u_dec2(.in(cp0_addr[7:3]), .out(cp0_addr_d));
@@ -61,7 +79,12 @@ assign cp0_rdata = {32{cp0_addr_d[`BADVADDR_NUM]}} & cp0_badvaddr
                  | {32{cp0_addr_d[`COUNT_NUM]}}    & cp0_count[32:1]
                  | {32{cp0_addr_d[`COMPARE_NUM]}}  & cp0_compare
                  | {32{cp0_addr_d[`CAUSE_NUM]}}    & cp0_cause
-                 | {32{cp0_addr_d[`EPC_NUM]}}      & cp0_epc;
+                 | {32{cp0_addr_d[`EPC_NUM]}}      & cp0_epc
+
+                 | {32{cp0_addr_d[`INDEX_NUM]}}    & cp0_index
+                 | {32{cp0_addr_d[`ENTRYHI_NUM]}}  & cp0_entryhi
+                 | {32{cp0_addr_d[`ENTRYLO1_NUM]}} & cp0_entrylo1
+                 | {32{cp0_addr_d[`ENTRYLO0_NUM]}} & cp0_entrylo0;
 
 //exc int info
 assign {int, rine, rdae, ades, sys, bp, ri, ov} = exc_type;
@@ -172,6 +195,45 @@ always @(posedge clk)
 always @(posedge clk)
 	if(cp0_wen && cp0_addr_d[`COMPARE_NUM] && cp0_addr[2:0]==3'h0)
 		cp0_compare <= cp0_wdata;
+
+reg  [31:0] cp0_index;
+reg  [31:0] cp0_entryhi;
+reg  [31:0] cp0_entrylo1;
+reg  [31:0] cp0_entrylo0;
+
+
+assign tlbwi_entry = {cp0_entryhi [31:13],
+	                  cp0_entryhi [ 7: 0],
+	                  cp0_entrylo1[0] && cp0_entrylo0[0],
+	                  cp0_entrylo0[25: 1],
+	                  cp0_entrylo1[25: 1]}
+
+always @(posedge clk or posedge rst) begin
+	if (rst) begin
+		// reset
+		
+	end
+	else if () begin
+		
+	end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 endmodule
