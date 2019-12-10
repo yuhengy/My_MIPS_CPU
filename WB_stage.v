@@ -153,6 +153,7 @@ CP0_reg u_CP0_reg(
     .tlbwi_entry (ws_tlbwi_entry)
 );
 assign send_flush = ws_valid && (ws_eret_flush || ws_exc);
+assign send_tlb_flush = 1'h0;  //TODO Lab14
 assign ws_final_result = ws_res_from_cp0? ws_cp0_rdata:
                                           ws_mem_alu_result;
 
