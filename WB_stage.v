@@ -147,11 +147,11 @@ CP0_reg u_CP0_reg(
     .int_happen  (int_happen                 ),
     .eret        (ws_valid && ws_eret_flush  ),
 
-    .tlbp_wen    (ws_inst_tlbp),
+    .tlbp_wen    (ws_inst_tlbp && ws_valid),
     .tlbp_entryhi(ws_entryhi),
     .tlbp_index  (ws_tlbp_index),
     .tlb_index   (ws_tlb_index),
-    .tlbr_wen    (ws_inst_tlbr),
+    .tlbr_wen    (ws_inst_tlbr && ws_valid),
     .tlbr_entry  (ws_tlbr_entry),
     .tlbwi_entry (ws_tlbwi_entry)
 );
@@ -160,7 +160,7 @@ assign send_tlb_flush = 1'h0;  //TODO Lab14
 assign ws_final_result = ws_res_from_cp0? ws_cp0_rdata:
                                           ws_mem_alu_result;
 
-assign ws_tlb_wen   = ws_inst_tlbwi;
+assign ws_tlb_wen   = ws_inst_tlbwi && ws_valid;
 // debug info generate
 assign debug_wb_pc       = ws_pc;
 assign debug_wb_rf_wen   = rf_we;
