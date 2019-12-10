@@ -57,6 +57,7 @@ wire [`FORWARD_BUS_WD  -1:0] forward_es_bus;
 wire [`FORWARD_BUS_WD  -1:0] forward_ms_bus;
 wire [`FORWARD_BUS_WD  -1:0] forward_ws_bus;
 wire [                  1:0] entryhi_stall_bus;
+wire [31:0] cp0_entryhi;
 
 wire [              18:0]   tlb_s0_vpn2;
 wire                        tlb_s0_odd_page;
@@ -78,32 +79,12 @@ wire [               2:0]   tlb_s1_c;
 wire                        tlb_s1_d;
 wire                        tlb_s1_v;
 
-wire                        tlb_we;
-wire [$clog2(TLBNUM)-1:0]   tlb_w_index;
-wire [              18:0]   tlb_w_vpn2;
-wire [               7:0]   tlb_w_asid;
-wire                        tlb_w_g;
-wire [              19:0]   tlb_w_pfn0;
-wire [               2:0]   tlb_w_c0;
-wire                        tlb_w_d0;
-wire                        tlb_w_v0;
-wire [              19:0]   tlb_w_pfn1;
-wire [               2:0]   tlb_w_c1;
-wire                        tlb_w_d1;
-wire                        tlb_w_v1;
+wire [$clog2(TLBNUM)-1:0]   tlb_wr_index;
 
-wire [$clog2(TLBNUM)-1:0]   tlb_r_index;
-wire [              18:0]   tlb_r_vpn2;
-wire [               7:0]   tlb_r_asid;
-wire                        tlb_r_g;
-wire [              19:0]   tlb_r_pfn0;
-wire [               2:0]   tlb_r_c0;
-wire                        tlb_r_d0;
-wire                        tlb_r_v0;
-wire [              19:0]   tlb_r_pfn1;
-wire [               2:0]   tlb_r_c1;
-wire                        tlb_r_d1;
-wire                        tlb_r_v1;
+wire                        tlb_we;
+wire [  TLB_ENTRY_WD-1:0]   tlb_w_entry;
+
+wire [  TLB_ENTRY_WD-1:0]   tlb_r_entry;
 
 wire tlbp_valid;
 
@@ -245,6 +226,13 @@ wb_stage wb_stage(
     .exc_eret_bus   (exc_eret_bus   ),
     // TLBP: stall
     .ws_entryhi_hazard(entryhi_stall_bus[1]),
+    // TLBP
+    .ws_entryhi     (cp0_entryhi    ),
+    // TLBR, TLBWI
+    .ws_tlb_index   (tlb_wr_index   ),
+    .ws_tlb_wen     (tlb_we         ),
+    .ws_tlbr_entry  (tlb_r_entry    ),
+    .ws_tlbwi_entry (tlb_w_entry    ),
     //trace debug interface
     .debug_wb_pc      (debug_wb_pc      ),
     .debug_wb_rf_wen  (debug_wb_rf_wen  ),
@@ -279,37 +267,40 @@ tlb u_tlb(
 
     // write port
     .we         (tlb_we         ),
-    .w_index    (tlb_w_index    ),
-    .w_vpn2     (tlb_w_vpn2     ),
-    .w_asid     (tlb_w_asid     ),
-    .w_g        (tlb_w_g        ),
-    .w_pfn0     (tlb_w_pfn0     ),
-    .w_c0       (tlb_w_c0       ),
-    .w_d0       (tlb_w_d0       ),
-    .w_v0       (tlb_w_v0       ),
-    .w_pfn1     (tlb_w_pfn1     ),
-    .w_c1       (tlb_w_c1       ),
-    .w_d1       (tlb_w_d1       ),
-    .w_v1       (tlb_w_v1       ),
+    .w_index    (tlb_wr_index   ),
+    .w_vpn2     (tlb_w_entry[77:69] ),
+    .w_asid     (tlb_w_entry[68:61] ),
+    .w_g        (tlb_w_entry[60]    ),
+    .w_pfn0     (tlb_w_entry[59:30] ),
+    .w_c0       (tlb_w_entry[29:27] ),
+    .w_d0       (tlb_w_entry[26]    ),
+    .w_v0       (tlb_w_entry[25]    ),
+    .w_pfn1     (tlb_w_entry[24: 5] ),
+    .w_c1       (tlb_w_entry[ 4: 2] ),
+    .w_d1       (tlb_w_entry[ 1]    ),
+    .w_v1       (tlb_w_entry[ 0]    ),
 
     // read port
-    .r_index    (tlb_r_index    ),
-    .r_vpn2     (tlb_r_vpn2     ),
-    .r_asid     (tlb_r_asid     ),
-    .r_g        (tlb_r_g        ),
-    .r_pfn0     (tlb_r_pfn0     ),
-    .r_c0       (tlb_r_c0       ),
-    .r_d0       (tlb_r_d0       ),
-    .r_v0       (tlb_r_v0       ),
-    .r_pfn1     (tlb_r_pfn1     ),
-    .r_c1       (tlb_r_c1       ),
-    .r_d1       (tlb_r_d1       ),
-    .r_v1       (tlb_r_v1       ),
+    .r_index    (tlb_wr_index   ),
+    .r_vpn2     (tlb_r_entry[77:69] ),
+    .r_asid     (tlb_r_entry[68:61] ),
+    .r_g        (tlb_r_entry[60]    ),
+    .r_pfn0     (tlb_r_entry[59:30] ),
+    .r_c0       (tlb_r_entry[29:27] ),
+    .r_d0       (tlb_r_entry[26]    ),
+    .r_v0       (tlb_r_entry[25]    ),
+    .r_pfn1     (tlb_r_entry[24: 5] ),
+    .r_c1       (tlb_r_entry[ 4: 2] ),
+    .r_d1       (tlb_r_entry[ 1]    ),
+    .r_v1       (tlb_r_entry[ 0]    ),
 );
 
+assign tlb_s0_vpn2 = 19'b0;
+assign tlb_s0_odd_page = 0;
+assign tlb_s0_asid = 8'b0;
 // TLBP ?
-assign tlb_s1_vpn2 = ;
-assign tlb_s1_odd_page = ;
-assign tlb_s1_asid = ;
+assign tlb_s1_vpn2 = cp0_entryhi[31:13];
+assign tlb_s1_odd_page = 0;
+assign tlb_s1_asid = cp0_entryhi[ 7: 0];
 
 endmodule
