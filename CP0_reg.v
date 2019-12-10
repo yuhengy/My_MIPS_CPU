@@ -208,7 +208,9 @@ assign tlbwi_entry  = {cp0_entryhi [31:13],
 	                   cp0_entrylo1[25: 1]};
 
 always @(posedge clk)
-	if(tlbp_wen)
+	if(rst)
+		cp0_index[31:$clog2(TLBNUM)] <= {(32-$clog2(TLBNUM)){1'h0}};  //???rst 31?
+	else if(tlbp_wen)
 		cp0_index <= tlbp_index;
 	else if(cp0_wen && cp0_addr_d[`INDEX_NUM] && cp0_addr[2:0]==3'h0)
 		cp0_index[$clog2(TLBNUM)-1:0] <= cp0_wdata[$clog2(TLBNUM)-1:0];
