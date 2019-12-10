@@ -101,24 +101,29 @@ assign rf_waddr = ws_dest;
 assign rf_wdata = ws_final_result;
 
 CP0_reg u_CP0_reg(
-    .clk        (clk                        ),
-    .rst        (reset                      ),
+    .clk         (clk                        ),
+    .rst         (reset                      ),
 
-    .cp0_addr   (ws_cp0_addr                ),
-    .cp0_wen    (ws_valid && ws_cp0_wen     ),
-    .cp0_wdata  (ws_mem_alu_result          ),
+    .cp0_addr    (ws_cp0_addr                ),
+    .cp0_wen     (ws_valid && ws_cp0_wen     ),
+    .cp0_wdata   (ws_mem_alu_result          ),
 
-    .cp0_rdata  (ws_cp0_rdata               ),
+    .cp0_rdata   (ws_cp0_rdata               ),
 
-    .exc_type   ({8{ws_valid}} & ws_exc_type),
-    .PC         (ws_pc                      ),
-    .is_slot    (ws_bd                      ),
-    .int_num    (ext_int_in                 ),
-    .bad_vaddr  (ws_badvaddr                ),
+    .exc_type    ({8{ws_valid}} & ws_exc_type),
+    .PC          (ws_pc                      ),
+    .is_slot     (ws_bd                      ),
+    .int_num     (ext_int_in                 ),
+    .bad_vaddr   (ws_badvaddr                ),
 
-    .EPC        (ws_cp0_epc                 ),
-    .int_happen (int_happen                 ),
-    .eret       (ws_valid && ws_eret_flush  )
+    .EPC         (ws_cp0_epc                 ),
+    .int_happen  (int_happen                 ),
+    .eret        (ws_valid && ws_eret_flush  ),
+
+    .tlbp_entryhi(),
+    .tlbr_wen    (),
+    .tlbr_entry  (),
+    .tlbwi_entry ()
 );
 assign send_flush = ws_valid && (ws_eret_flush || ws_exc);
 assign ws_final_result = ws_res_from_cp0? ws_cp0_rdata:
