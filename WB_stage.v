@@ -28,6 +28,7 @@ module wb_stage #
 
     // Stall: TLBP
     output                          ws_entryhi_hazard,
+    output                          ws_entryhi,
     //TLBR、TLBWI
     output [   $clog2(TLBNUM)-1:0]  ws_tlb_index   ,
     output                          ws_tlb_wen     ,
@@ -127,8 +128,8 @@ CP0_reg u_CP0_reg(
     .clk         (clk                        ),
     .rst         (reset                      ),
 
-    .cp0_addr    ((ws_inst_tlbp||ws_inst_tlbr||ws_inst_tlbwi)? ws_cp0_addr:
-                                                               ws_cp0_addr),
+    .cp0_addr    ((ws_inst_tlbp)? {`INDEX_NUM, 3'h0}:
+                                  ws_cp0_addr),
     .cp0_wen     (ws_valid && ws_cp0_wen     ),
     .cp0_wdata   (ws_mem_alu_result          ),
 
@@ -145,14 +146,18 @@ CP0_reg u_CP0_reg(
     .eret        (ws_valid && ws_eret_flush  ),
 
     .tlbp_entryhi(),
-    .tlbr_wen    (),
-    .tlbr_entry  (),
-    .tlbwi_entry ()
+    .tlb_index   (ws_tlb_index),
+    .tlbr_wen    (ws_inst_tlbr),
+    .tlbr_entry  (ws_tlbr_entry),
+    .tlbwi_entry (ws_tlbwi_entry)
 );
 assign send_flush = ws_valid && (ws_eret_flush || ws_exc);
 assign ws_final_result = ws_res_from_cp0? ws_cp0_rdata:
                                           ws_mem_alu_result;
 
+
+assign ws_tlb_index = ws_cp0_rdata[$clog2(TLBNUM)-1:0];
+assign ws_tlb_wen   = ws_inst_tlbwi;
 // debug info generate
 assign debug_wb_pc       = ws_pc;
 assign debug_wb_rf_wen   = rf_we;

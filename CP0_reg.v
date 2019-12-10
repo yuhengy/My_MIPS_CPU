@@ -28,12 +28,12 @@ module CP0_reg #
     //input Index use cp0_wdata
 
     //tlbr
-    //output Index use cp0_rdata
+    output [$clog2(TLBNUM)-1:0] tlb_index,
     input         tlbr_wen,
     input  [77:0] tlbr_entry,
 
     //tlbwi
-    //output Index use cp0_rdata
+    //output Index use tlb_index
     output [77:0] tlbwi_entry
 );
 
@@ -198,6 +198,7 @@ always @(posedge clk)
 
 //tlb
 assign tlbp_entryhi = cp0_entryhi;
+assign tlb_index    = cp0_index[$clog2(TLBNUM)-1:0];
 assign tlbwi_entry  = {cp0_entryhi [31:13],
 	                   cp0_entryhi [ 7: 0],
 	                   cp0_entrylo1[0] && cp0_entrylo0[0],
