@@ -147,7 +147,7 @@ ld_select u_ld_select(
 );
 
 assign ms_mem_alu_result = ms_res_from_mem ? mem_result :
-                                        : ms_alu_result;
+                                             ms_alu_result;
 
 assign ms_entryhi_hazard = ms_valid && ms_entryhi_wen;
 
