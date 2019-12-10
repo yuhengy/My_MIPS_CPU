@@ -18,6 +18,8 @@ module mem_stage(
     output [`FORWARD_BUS_WD  -1:0] forward_ms_bus,
     //ms to es exc/eret bus
     output [                  1:0] ms_exc_eret_bus,
+    //TLBP stall
+    output                         ms_entryhi_wen,
     //from data-sram
     input                          data_sram_data_ok,
     input  [31                 :0] data_sram_rdata
@@ -135,8 +137,13 @@ ld_select u_ld_select(
     .mem_result      (mem_result     )
 );
 
-assign ms_mem_alu_result = ms_res_from_mem ? mem_result
-                                         : ms_alu_result;
+assign ms_mem_alu_result = ms_res_from_mem ? mem_result :
+                           ms_inst_tlbp ? ms_cp0_index_wdata
+                                        : ms_alu_result;
+
+assign ms_entryhi_wen = ms_valid && 
+                    (ms_inst_tlbr ||
+                    ms_cp0_wen && (ms_cp0_addr == {ENTRYHI_NUM, 3'b0}));
 
 // exceptions
 assign ms_exc      = old_es_exc || ms_adel;

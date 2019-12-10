@@ -11,15 +11,15 @@
     `define MS_TO_WS_BUS_WD 126
     `define WS_TO_RF_BUS_WD 42
 
-    `define BADVADDR_NUM 8
-    `define COUNT_NUM    9
-    `define COMPARE_NUM  11
-    `define STATUS_NUM   12
-    `define CAUSE_NUM    13
-    `define EPC_NUM      14
+    `define BADVADDR_NUM 5'd8
+    `define COUNT_NUM    5'd9
+    `define COMPARE_NUM  5'd11
+    `define STATUS_NUM   5'd12
+    `define CAUSE_NUM    5'd13
+    `define EPC_NUM      5'd14
 
-    `define INDEX_NUM    0
-    `define ENTRYLO0_NUM 2
-    `define ENTRYLO1_NUM 3
-    `define ENTRYHI_NUM  10
+    `define INDEX_NUM    5'd0
+    `define ENTRYLO0_NUM 5'd2
+    `define ENTRYLO1_NUM 5'd3
+    `define ENTRYHI_NUM  5'd10
 `endif
