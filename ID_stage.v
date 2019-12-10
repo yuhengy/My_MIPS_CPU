@@ -439,7 +439,8 @@ assign dst_is_rt    = inst_addi  | inst_addiu | inst_slti  | inst_sltiu
                     | inst_mfc0;
 assign gr_we        = ~inst_beq & ~inst_bne & ~inst_bgez & ~inst_bgtz & ~inst_blez & ~inst_bltz
                     & ~store_op & ~inst_j   & ~inst_jr   & ~inst_mthi & ~inst_mtlo
-                    & ~inst_mtc0& ~inst_eret& ~inst_syscall;
+                    & ~inst_mtc0& ~inst_eret& ~inst_syscall
+                    & ~inst_tlbp& ~inst_tlbwi&~inst_tlbr ;
 assign ds_hi_we     = inst_mult  | inst_multu | inst_div   | inst_divu  | inst_mthi;
 assign ds_lo_we     = inst_mult  | inst_multu | inst_div   | inst_divu  | inst_mtlo;
 assign hl_from_rs   = inst_mthi  | inst_mtlo;
@@ -487,13 +488,15 @@ forward_merge u_forward_merge_2(
 
 assign use_reg1 = ~inst_sll  & ~inst_srl     & ~inst_sra    & ~inst_jal
                 & ~inst_mfhi & ~inst_mflo    & ~inst_mfc0   & ~inst_mtc0
-                & ~inst_eret & ~inst_syscall & ~inst_break;
+                & ~inst_eret & ~inst_syscall & ~inst_break
+                & ~inst_tlbp & ~inst_tlbwi   & ~inst_tlbr ;
 assign use_reg2 = ~inst_addi & ~inst_addiu   & ~inst_slti   & ~inst_sltiu  & ~inst_lui & ~load_op
                 & ~inst_andi & ~inst_ori     & ~inst_xori
                 & ~inst_jal  & ~inst_jalr    & ~inst_bgezal & ~inst_bltzal
                 & ~inst_bgez & ~inst_bgtz    & ~inst_blez   & ~inst_bltz   & ~inst_j    & ~inst_jr
                 & ~inst_mfhi & ~inst_mflo    & ~inst_mthi   & ~inst_mtlo   & ~inst_mfc0
-                & ~inst_eret & ~inst_syscall & ~inst_break;
+                & ~inst_eret & ~inst_syscall & ~inst_break
+                & ~inst_tlbp & ~inst_tlbwi   & ~inst_tlbr ;
 
 assign reg1_stall_valid = rf_raddr1!=5'h0 && use_reg1;
 assign reg2_stall_valid = rf_raddr2!=5'h0 && use_reg2;
