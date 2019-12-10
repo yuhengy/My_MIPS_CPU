@@ -22,4 +22,6 @@
     `define ENTRYLO0_NUM 5'd2
     `define ENTRYLO1_NUM 5'd3
     `define ENTRYHI_NUM  5'd10
+
+    `define TLB_ENTRY_WD 78
 `endif

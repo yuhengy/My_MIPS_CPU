@@ -1,6 +1,10 @@
 `include "mycpu.h"
 
-module wb_stage(
+module wb_stage #
+(
+    parameter TLBNUM = 16
+)
+(
     input                           clk           ,
     input                           reset         ,
     input  [5:0]                    ext_int_in    ,
@@ -21,8 +25,15 @@ module wb_stage(
     output [                  1:0]  ws_exc_eret_bus,
     //exc_eret_epc bus
     output [`EXC_ERET_BUS_WD -1:0]  exc_eret_bus  ,
+
     // Stall: TLBP
     output                          ws_entryhi_hazard,
+    //TLBR、TLBWI
+    output [   $clog2(TLBNUM)-1:0]  ws_tlb_index   ,
+    output                          ws_tlb_wen     ,
+    input  [    `TLB_ENTRY_WD-1:0]  ws_tlbr_entry  ,
+    output [    `TLB_ENTRY_WD-1:0]  ws_tlbwi_entry ,
+
     //trace debug interface
     output [31:0] debug_wb_pc     ,
     output [ 3:0] debug_wb_rf_wen ,
@@ -116,7 +127,8 @@ CP0_reg u_CP0_reg(
     .clk         (clk                        ),
     .rst         (reset                      ),
 
-    .cp0_addr    (ws_cp0_addr                ),
+    .cp0_addr    ((ws_inst_tlbp||ws_inst_tlbr||ws_inst_tlbwi)? ws_cp0_addr:
+                                                               ws_cp0_addr),
     .cp0_wen     (ws_valid && ws_cp0_wen     ),
     .cp0_wdata   (ws_mem_alu_result          ),
 
