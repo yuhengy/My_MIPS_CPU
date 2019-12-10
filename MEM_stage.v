@@ -149,7 +149,7 @@ assign ms_mem_alu_result = ms_res_from_mem ? mem_result :
 assign ms_entryhi_hazard = ms_valid && ms_entryhi_wen;
 
 assign ms_entryhi_wen = ms_inst_tlbr ||
-                    ms_cp0_wen && (ms_cp0_addr == {ENTRYHI_NUM, 3'b0});
+                    ms_cp0_wen && (ms_cp0_addr == {`ENTRYHI_NUM, 3'b0});
 
 // exceptions
 assign ms_exc      = old_es_exc || ms_adel;

@@ -21,6 +21,7 @@ module wb_stage #
     output [`STALL_BUS_WD    -1:0]  stall_ws_bus  ,
     output [`FORWARD_BUS_WD  -1:0]  forward_ws_bus,
     output                          send_flush    ,
+    output                          send_tlb_flush,
     //wb exc eret
     output [                  1:0]  ws_exc_eret_bus,
     //exc_eret_epc bus
@@ -28,7 +29,7 @@ module wb_stage #
 
     // Stall: TLBP
     output                          ws_entryhi_hazard,
-    output                          ws_entryhi,
+    output [                 31:0]  ws_entryhi,
     //TLBR、TLBWI
     output [   $clog2(TLBNUM)-1:0]  ws_tlb_index   ,
     output                          ws_tlb_wen     ,
@@ -145,7 +146,7 @@ CP0_reg u_CP0_reg(
     .int_happen  (int_happen                 ),
     .eret        (ws_valid && ws_eret_flush  ),
 
-    .tlbp_entryhi(),
+    .tlbp_entryhi(ws_entryhi),
     .tlb_index   (ws_tlb_index),
     .tlbr_wen    (ws_inst_tlbr),
     .tlbr_entry  (ws_tlbr_entry),
@@ -155,8 +156,6 @@ assign send_flush = ws_valid && (ws_eret_flush || ws_exc);
 assign ws_final_result = ws_res_from_cp0? ws_cp0_rdata:
                                           ws_mem_alu_result;
 
-
-assign ws_tlb_index = ws_cp0_rdata[$clog2(TLBNUM)-1:0];
 assign ws_tlb_wen   = ws_inst_tlbwi;
 // debug info generate
 assign debug_wb_pc       = ws_pc;
