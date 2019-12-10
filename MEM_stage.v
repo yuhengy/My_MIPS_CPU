@@ -19,7 +19,7 @@ module mem_stage(
     //ms to es exc/eret bus
     output [                  1:0] ms_exc_eret_bus,
     //TLBP stall
-    output                         ms_entryhi_wen,
+    output                         ms_entryhi_hazard,
     //from data-sram
     input                          data_sram_data_ok,
     input  [31                 :0] data_sram_rdata
@@ -77,8 +77,13 @@ assign {ms_inst_tlbr   ,  //139:139
 wire [31:0] ms_badvaddr;
 wire [31:0] mem_result;
 wire [31:0] ms_mem_alu_result;
+wire        ms_entryhi_wen;
 
-assign ms_to_ws_bus = {ms_badvaddr    ,  //125:94
+assign ms_to_ws_bus = {ms_entryhi_wen ,  //129:129
+                       ms_inst_tlbr   ,  //128:128
+                       ms_inst_tlbwi  ,  //127:127
+                       ms_inst_tlbp   ,  //126:126
+                       ms_badvaddr    ,  //125:94
                        ms_bd          ,  // 93:93
                        ms_exc         ,  // 92:92
                        ms_exc_type    ,  // 91:84
@@ -141,9 +146,10 @@ assign ms_mem_alu_result = ms_res_from_mem ? mem_result :
                            ms_inst_tlbp ? ms_cp0_index_wdata
                                         : ms_alu_result;
 
-assign ms_entryhi_wen = ms_valid && 
-                    (ms_inst_tlbr ||
-                    ms_cp0_wen && (ms_cp0_addr == {ENTRYHI_NUM, 3'b0}));
+assign ms_entryhi_hazard = ms_valid && ms_entryhi_wen;
+
+assign ms_entryhi_wen = ms_inst_tlbr ||
+                    ms_cp0_wen && (ms_cp0_addr == {ENTRYHI_NUM, 3'b0});
 
 // exceptions
 assign ms_exc      = old_es_exc || ms_adel;

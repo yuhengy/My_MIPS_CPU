@@ -21,6 +21,8 @@ module wb_stage(
     output [                  1:0]  ws_exc_eret_bus,
     //exc_eret_epc bus
     output [`EXC_ERET_BUS_WD -1:0]  exc_eret_bus  ,
+    // Stall: TLBP
+    output                          ws_entryhi_hazard,
     //trace debug interface
     output [31:0] debug_wb_pc     ,
     output [ 3:0] debug_wb_rf_wen ,
@@ -33,6 +35,10 @@ wire        ws_ready_go;
 
 reg [`MS_TO_WS_BUS_WD -1:0] ms_to_ws_bus_r;
 
+wire        ws_entryhi_wen ;
+wire        ws_inst_tlbr   ;
+wire        ws_inst_tlbwi  ;
+wire        ws_inst_tlbp   ;
 wire [31:0] ws_badvaddr    ;
 wire        ws_bd          ;
 wire        ws_exc         ;
@@ -46,7 +52,11 @@ wire [ 4:0] ws_dest        ;
 wire [31:0] ws_mem_alu_result;
 wire [31:0] ws_final_result;
 wire [31:0] ws_pc          ;
-assign {ws_badvaddr    ,  //125:94
+assign {ws_entryhi_wen ,  //129:129
+        ws_inst_tlbr   ,  //128:128
+        ws_inst_tlbwi  ,  //127:127
+        ws_inst_tlbp   ,  //126:126
+        ws_badvaddr    ,  //125:94
         ws_bd          ,  // 93:93
         ws_exc         ,  // 92:92
         ws_exc_type    ,  // 91:84
@@ -78,6 +88,8 @@ assign forward_ws_bus = {ws_valid,
 
 assign ws_exc_eret_bus = {ws_exc && ws_valid, ws_eret_flush && ws_valid};
 assign exc_eret_bus    = {ws_exc && ws_valid, ws_eret_flush && ws_valid, ws_cp0_epc};
+
+assign ws_entryhi_hazard = ws_valid && ws_entryhi_wen;
 
 assign ws_ready_go = 1'b1;
 assign ws_allowin  = !ws_valid || ws_ready_go;
