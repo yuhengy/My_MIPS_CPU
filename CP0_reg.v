@@ -227,7 +227,7 @@ always @(posedge clk)
 
 always @(posedge clk)
 	if(rst)
-		cp0_entrylo1[31:30] <= 2'h0;
+		cp0_entrylo1[31:26] <= 6'h0;
 	else if(tlbr_wen)
 		cp0_entrylo1 <= {6'h0, tlbr_entry[24:0], tlbr_entry[50]};
 	else if(cp0_wen && cp0_addr_d[`ENTRYLO1_NUM] && cp0_addr[2:0]==3'h0)
@@ -235,7 +235,7 @@ always @(posedge clk)
 
 always @(posedge clk)
 	if(rst)
-		cp0_entrylo0[31:30] <= 2'h0;
+		cp0_entrylo0[31:26] <= 6'h0;
 	else if(tlbr_wen)
 		cp0_entrylo0 <= {6'h0, tlbr_entry[49:25], tlbr_entry[50]};
 	else if(cp0_wen && cp0_addr_d[`ENTRYLO0_NUM] && cp0_addr[2:0]==3'h0)
