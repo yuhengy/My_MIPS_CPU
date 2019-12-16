@@ -16,6 +16,7 @@ module tlb #
     output [               2:0] s0_c,
     output                      s0_d,
     output                      s0_v,
+    output                      s0_Refill_Invalid_r,
 
     //search port 1
     input  [              18:0] s1_vpn2,
@@ -27,6 +28,10 @@ module tlb #
     output [               2:0] s1_c,
     output                      s1_d,
     output                      s1_v,
+    input                       store,
+    output                      s1_Refill_Invalid_r,
+    output                      s1_Refill_Invalid_s,
+    output                      s1_Modified,
 
     //write port
     input                       we,
@@ -72,20 +77,7 @@ reg        tlb_v1   [TLBNUM-1:0];
 
 //write
 always @(posedge clk)
-/*    if(rst) begin
-        tlb_vpn2[w_index] <= 19'h0;
-        tlb_asid[w_index] <= 8'h0;
-        tlb_g   [w_index] <= 1'h0;
-        tlb_pfn0[w_index] <= 20'h0;
-        tlb_c0  [w_index] <= 3'h0;
-        tlb_d0  [w_index] <= 1'h0;
-        tlb_v0  [w_index] <= 1'h0;
-        tlb_pfn1[w_index] <= 20'h0;
-        tlb_c1  [w_index] <= 3'h0;
-        tlb_d1  [w_index] <= 1'h0;
-        tlb_v1  [w_index] <= 1'h0;
-    end
-    else */if(we) begin
+    if(we) begin
         tlb_vpn2[w_index] <= w_vpn2;
         tlb_asid[w_index] <= w_asid;
         tlb_g   [w_index] <= w_g;
@@ -226,5 +218,26 @@ generate for(j=0; j< 3; j=j+1) begin: gen_r_c1
 end endgenerate
     assign r_d1      = |(r_index_entry & tlb_d1_T     );
     assign r_v1      = |(r_index_entry & tlb_v1_T     );
+
+TLB_exc_judge TLB_exc_judge_s0(
+    .found(s0_found),
+    .V    (s0_v    ),
+    .D    (s0_d    ),
+    .store(1'h0    ),
+
+    .Refill_Invalid_r(s0_Refill_Invalid_r),
+    //.Refill_Invalid_s(),
+    //.Modified()
+);
+TLB_exc_judge TLB_exc_judge_s1(
+    .found(s1_found),
+    .V    (s1_v    ),
+    .D    (s1_d    ),
+    .store(store   ),
+
+    .Refill_Invalid_r(s1_Refill_Invalid_r),
+    .Refill_Invalid_s(s1_Refill_Invalid_s),
+    .Modified        (s1_Modified        )
+);
 
 endmodule

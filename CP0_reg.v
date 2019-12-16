@@ -12,7 +12,7 @@ module CP0_reg #
     input         cp0_wen,
     input  [31:0] cp0_wdata,
 
-    input  [ 7:0] exc_type,
+    input  [11:0] exc_type,
     input  [31:0] PC,
     input         is_slot,
 
@@ -40,7 +40,8 @@ module CP0_reg #
 );
 
 wire [31:0] cp0_addr_d;
-wire        int, rine, rdae, ades, sys, bp, ri, ov;
+wire        int, rine, rdae, ades, sys, bp, ri, ov, TLB_in, TLB_dr, TLB_ds, Mod;
+wire        TLB_exc;
 wire        any_exc;
 wire [ 4:0] exccode;
 
@@ -89,16 +90,21 @@ assign cp0_rdata = {32{cp0_addr_d[`BADVADDR_NUM]}} & cp0_badvaddr
                  | {32{cp0_addr_d[`ENTRYLO0_NUM]}} & cp0_entrylo0;
 
 //exc int info
-assign {int, rine, rdae, ades, sys, bp, ri, ov} = exc_type;
+assign {int, rine, rdae, ades, sys, bp, ri, ov, TLB_in, TLB_dr, TLB_ds, Mod} = exc_type;
+assign TLB_exc = TLB_in || TLB_dr || TLB_ds || Mod;
 assign any_exc = |exc_type;
-assign exccode = int  ? 5'h00 :
-                 rine ? 5'h04 :
-                 ri   ? 5'h0a :
-                 sys  ? 5'h08 :
-                 bp   ? 5'h09 :
-                 ov   ? 5'h0c :
-                 rdae ? 5'h04 :
-           /* ades */   5'h05 ;
+assign exccode = int   ? 5'h00 :
+                 rine  ? 5'h04 :
+                 TLB_in? 5'h02 :
+                 ri    ? 5'h0a :
+                 sys   ? 5'h08 :
+                 bp    ? 5'h09 :
+                 ov    ? 5'h0c :
+                 rdae  ? 5'h04 :
+                 ades  ? 5'h05 :
+                 TLB_dr? 5'h02 :
+                 TLB_ds? 5'h03 :
+                /*Mod*/  5'h01 ;
 
 assign int_happen = !cp0_status_exl && cp0_status_ie
                  && (|(cp0_status_im & cp0_cause_ip));
@@ -181,7 +187,7 @@ always @(posedge clk)
 		cp0_epc <= cp0_wdata;
 
 	//badvaddr
-assign cp0_badvaddr_wen = rine | rdae | ades;
+assign cp0_badvaddr_wen = rine | rdae | ades | TLB_exc;
 always @(posedge clk)
 	if(cp0_badvaddr_wen)
 		cp0_badvaddr <= bad_vaddr;
@@ -218,6 +224,8 @@ always @(posedge clk)
 always @(posedge clk)
 	if(rst)
 		cp0_entryhi[12:8] <= 5'h0;
+	else if(TLB_exc)
+		cp0_entryhi[31:13] <= cp0_badvaddr[31:13];
 	else if(tlbr_wen)
 		cp0_entryhi <= {tlbr_entry[77:59], 5'h0, tlbr_entry[58:51]};
 	else if(cp0_wen && cp0_addr_d[`ENTRYHI_NUM] && cp0_addr[2:0]==3'h0) begin

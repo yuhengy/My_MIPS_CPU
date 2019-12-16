@@ -92,8 +92,16 @@ wire [ `TLB_ENTRY_WD-1:0]   tlb_r_entry;
 wire tlbp_valid;
 
 wire ws_send_flush;
-reg tlb_flush_r;
+reg  tlb_flush_r;
 wire ws_tlb_flush;
+
+wire [19:0] inst_vpn2_odd;
+wire        TLB_exec_inst;
+wire [19:0] data_vpn2_odd;
+wire        exe_store    ;
+wire        TLB_exec_dr  ;
+wire        TLB_exec_ds  ;
+wire        TLB_exec_Mod ;
 
 assign flush = ws_send_flush || tlb_flush_r;
 
@@ -120,6 +128,11 @@ if_stage if_stage(
     //outputs
     .fs_to_ds_valid (fs_to_ds_valid ),
     .fs_to_ds_bus   (fs_to_ds_bus   ),
+
+    //TLB V2P
+    .inst_vpn2_odd  (inst_vpn2_odd  ),
+    .inst_pfn       (tlb_s0_pfn     ),
+    .TLB_exec_inst  (TLB_exec_inst  ),
     // inst sram interface
     .inst_sram_req  (inst_sram_req  ),
     .inst_sram_wen  (inst_sram_wstrb),
@@ -185,6 +198,13 @@ exe_stage exe_stage(
     .tlbp_found     (tlb_s1_found   ),
     .tlbp_index     (tlb_s1_index   ),
     .entryhi_stall_bus(entryhi_stall_bus),
+    //TLB V2P
+    .data_vpn2_odd  (data_vpn2_odd  ),
+    .data_pfn       (tlb_s1_pfn     ),
+    .exe_store      (exe_store      ),
+    .TLB_exec_dr    (TLB_exec_dr    ),
+    .TLB_exec_ds    (TLB_exec_ds    ),
+    .TLB_exec_Mod   (TLB_exec_Mod   ),
     // data sram interface
     .data_sram_req  (data_sram_req  ),
     .data_sram_wr   (data_sram_wr   ),
@@ -272,6 +292,7 @@ tlb u_tlb(
     .s0_c       (tlb_s0_c       ),
     .s0_d       (tlb_s0_d       ),
     .s0_v       (tlb_s0_v       ),
+    .s0_Refill_Invalid_r(TLB_exec_inst),
 
     // search port 1
     .s1_vpn2    (tlb_s1_vpn2    ),
@@ -283,6 +304,10 @@ tlb u_tlb(
     .s1_c       (tlb_s1_c       ),
     .s1_d       (tlb_s1_d       ),
     .s1_v       (tlb_s1_v       ),
+    .store      (exe_store      ),
+    .s1_Refill_Invalid_r(TLB_exec_dr),
+    .s1_Refill_Invalid_s(TLB_exec_ds),
+    .s1_Modified(TLB_exec_Mod   ),
 
     // write port
     .we         (tlb_we         ),
@@ -314,12 +339,14 @@ tlb u_tlb(
     .r_v1       (tlb_r_entry[ 0]    )
 );
 
-assign tlb_s0_vpn2 = 19'b0;
-assign tlb_s0_odd_page = 0;
-assign tlb_s0_asid = 8'b0;
+assign tlb_s0_vpn2     = inst_vpn2_odd[19: 1];
+assign tlb_s0_odd_page = inst_vpn2_odd[    0];
+assign tlb_s0_asid     = cp0_entryhi  [ 7: 0];
 // TLBP ?
-assign tlb_s1_vpn2 = cp0_entryhi[31:13];
-assign tlb_s1_odd_page = 0;
-assign tlb_s1_asid = cp0_entryhi[ 7: 0];
+assign tlb_s1_vpn2     = tlbp_valid? cp0_entryhi  [31:13]:
+                                     data_vpn2_odd[19: 1];
+assign tlb_s1_odd_page = tlbp_valid? cp0_entryhi  [   12]://cp0_entryhi[12]???
+                                     data_vpn2_odd[    0];
+assign tlb_s1_asid     = cp0_entryhi[ 7: 0];
 
 endmodule

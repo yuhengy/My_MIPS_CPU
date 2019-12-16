@@ -444,7 +444,20 @@ assign merge_value[31:24] = {8{forward_es & forward_en_es[3]}} & forward_data_es
 endmodule
 
 
+module TLB_exc_judge(
+    input  found,
+    input  V,
+    input  D,
+    input  store,
 
+    output Refill_Invalid_r,
+    output Refill_Invalid_s,
+    output Modified
+);
+assign Refill_Invalid_r = !store && (!found || !V);
+assign Refill_Invalid_s =  store && (!found || !V);
+assign Modified       = found && V && !D && store;
+endmodule
 
 
 

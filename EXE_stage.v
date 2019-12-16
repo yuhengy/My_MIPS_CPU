@@ -27,6 +27,15 @@ module exe_stage #
     input                       tlbp_found,
     input  [$clog2(TLBNUM)-1:0] tlbp_index,
     input  [               1:0] entryhi_stall_bus,
+
+    //TLB V2P
+    output [                 19:0] data_vpn2_odd  ,
+    output                         exe_store      ,
+    input  [                 19:0] data_pfn       ,
+    input                          TLB_exec_dr    ,
+    input                          TLB_exec_ds    ,
+    input                          TLB_exec_Mod   ,
+
     // data sram interface
     output        data_sram_req  ,
     output        data_sram_wr   ,

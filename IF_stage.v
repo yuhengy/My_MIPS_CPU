@@ -13,6 +13,12 @@ module if_stage(
     //to ds
     output                         fs_to_ds_valid ,
     output [`FS_TO_DS_BUS_WD -1:0] fs_to_ds_bus   ,
+
+    //TLB V2P
+    output [                 19:0] inst_vpn2_odd  ,
+    input  [                 19:0] inst_pfn       ,
+    input                          TLB_exec_inst  ,
+
     // inst sram interface
     output        inst_sram_req  ,
     output [ 3:0] inst_sram_wen  ,
