@@ -90,7 +90,7 @@ assign cp0_rdata = {32{cp0_addr_d[`BADVADDR_NUM]}} & cp0_badvaddr
                  | {32{cp0_addr_d[`ENTRYLO0_NUM]}} & cp0_entrylo0;
 
 //exc int info
-assign {int, rine, rdae, ades, sys, bp, ri, ov, TLB_refil_in, TLB_inval_in, TLB_refil_dr, TLB_inval_dr, TLB_refil_ds, TLB_inval_ds, Mod} = exc_type;
+assign {TLB_refil_in, TLB_inval_in, TLB_refil_dr, TLB_inval_dr, TLB_refil_ds, TLB_inval_ds, Mod, int, rine, rdae, ades, sys, bp, ri, ov} = exc_type;
 assign TLB_exc = TLB_refil_in || TLB_inval_in || TLB_refil_dr || TLB_inval_dr || TLB_refil_ds || TLB_inval_ds || Mod;
 assign any_exc = |exc_type;
 assign exccode = int   ? 5'h00 :
