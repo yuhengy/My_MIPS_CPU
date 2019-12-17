@@ -120,6 +120,7 @@ assign inst_sram_data_ok_after_ignore = (inst_sram_data_ok || pre_IF_TLB_refil |
 wire inst_unmapped;
 reg  pre_IF_TLB_refil, pre_IF_TLB_inval;
 reg  fs_TLB_refil    , fs_TLB_inval    ;
+assign inst_vpn2_odd = true_npc[31:12];
 assign inst_unmapped = true_npc[31:30]==4'b10;
 always @(posedge clk)
     if(reset)
