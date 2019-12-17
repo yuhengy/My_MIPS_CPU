@@ -95,13 +95,16 @@ wire ws_send_flush;
 reg  tlb_flush_r;
 wire ws_tlb_flush;
 
-wire [19:0] inst_vpn2_odd;
-wire        TLB_exec_inst;
-wire [19:0] data_vpn2_odd;
-wire        exe_store    ;
-wire        TLB_exec_dr  ;
-wire        TLB_exec_ds  ;
-wire        TLB_exec_Mod ;
+wire [19:0] inst_vpn2_odd ;
+wire        TLB_refil_inst;
+wire        TLB_inval_inst;
+wire [19:0] data_vpn2_odd ;
+wire        exe_store     ;
+wire        TLB_refil_dr  ;
+wire        TLB_inval_dr  ;
+wire        TLB_refil_ds  ;
+wire        TLB_inval_ds  ;
+wire        TLB_exec_Mod  ;
 
 assign flush = ws_send_flush || tlb_flush_r;
 
@@ -132,7 +135,8 @@ if_stage if_stage(
     //TLB V2P
     .inst_vpn2_odd  (inst_vpn2_odd  ),
     .inst_pfn       (tlb_s0_pfn     ),
-    .TLB_exec_inst  (TLB_exec_inst  ),
+    .TLB_refil_inst (TLB_refil_inst ),
+    .TLB_inval_inst (TLB_inval_inst ),
     // inst sram interface
     .inst_sram_req  (inst_sram_req  ),
     .inst_sram_wen  (inst_sram_wstrb),

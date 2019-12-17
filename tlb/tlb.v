@@ -16,7 +16,8 @@ module tlb #
     output [               2:0] s0_c,
     output                      s0_d,
     output                      s0_v,
-    output                      s0_Refill_Invalid_r,
+    output                      s0_Refill_r,
+    output                      s0_Invalid_r,
 
     //search port 1
     input  [              18:0] s1_vpn2,
@@ -29,8 +30,10 @@ module tlb #
     output                      s1_d,
     output                      s1_v,
     input                       store,
-    output                      s1_Refill_Invalid_r,
-    output                      s1_Refill_Invalid_s,
+    output                      s1_Refill_r,
+    output                      s1_Invalid_r,
+    output                      s1_Refill_s,
+    output                      s1_Invalid_s,
     output                      s1_Modified,
 
     //write port
@@ -225,7 +228,8 @@ TLB_exc_judge TLB_exc_judge_s0(
     .D    (s0_d    ),
     .store(1'h0    ),
 
-    .Refill_Invalid_r(s0_Refill_Invalid_r),
+    .Refill_r(s0_Refill_r),
+    .Invalid_r(s0_Invalid_r),
     //.Refill_Invalid_s(),
     //.Modified()
 );
@@ -235,9 +239,11 @@ TLB_exc_judge TLB_exc_judge_s1(
     .D    (s1_d    ),
     .store(store   ),
 
-    .Refill_Invalid_r(s1_Refill_Invalid_r),
-    .Refill_Invalid_s(s1_Refill_Invalid_s),
-    .Modified        (s1_Modified        )
+    .Refill_r (s1_Refill_r ),
+    .Invalid_r(s1_Invalid_r),
+    .Refill_s (s1_Refill_s ),
+    .Invalid_s(s1_Invalid_s),
+    .Modified (s1_Modified )
 );
 
 endmodule

@@ -104,11 +104,24 @@ always @(posedge clk)
     if(reset)
         ignore_next_inst_sram_data_ok <= 1'h0;
     //not havegot_notgetting_last_inst_sram_data_ok && not getting_inst_sram_data_ok
-    else if(flush && !buf_inst_valid && !inst_sram_data_ok)
+    else if(flush && !buf_inst_valid && !(inst_sram_data_ok || pre_IF_TLB_exc))
         ignore_next_inst_sram_data_ok <= 1'h1;
-    else if(inst_sram_data_ok)
+    else if(inst_sram_data_ok || pre_IF_TLB_exc)
         ignore_next_inst_sram_data_ok <= 1'h0;
-assign inst_sram_data_ok_after_ignore = inst_sram_data_ok && !ignore_next_inst_sram_data_ok;
+assign inst_sram_data_ok_after_ignore = (inst_sram_data_ok || pre_IF_TLB_exc) && !ignore_next_inst_sram_data_ok;
+
+//TLB exception
+wire inst_unmapped;
+reg  pre_IF_TLB_exc;
+assign inst_unmapped = true_npc[31:30]==4'b10;
+always @(posedge clk)
+    if(reset)
+        pre_IF_TLB_exc <= 1'h0;
+    else if(to_fs_valid && fs_allowin || flush)
+        pre_IF_TLB_exc <= TLB_exec_inst && !inst_unmapped;
+    else if(pre_IF_TLB_exc)
+        pre_IF_TLB_exc <= 1'h0;
+
 // IF stage
 assign fs_ready_go    = inst_sram_data_ok_after_ignore || buf_inst_valid;
 assign fs_allowin     = !fs_valid || fs_ready_go && ds_allowin;
@@ -133,9 +146,9 @@ always @(posedge clk) begin
 end
 
 
-assign inst_sram_req   = to_fs_valid && fs_allowin || flush;
+assign inst_sram_req   = (to_fs_valid && fs_allowin || flush) && !(TLB_exec_inst && !inst_unmapped);
 assign inst_sram_wen   = 4'h0;
-assign inst_sram_addr  = true_npc;
+assign inst_sram_addr  = inst_unmapped ? true_npc : {inst_pfn, true_npc[11:0]};
 assign inst_sram_wdata = 32'b0;
 
 assign fs_inst         = buf_inst_valid ? buf_inst : inst_sram_rdata;
