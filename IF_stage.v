@@ -133,8 +133,13 @@ always @(posedge clk)
 always @(posedge clk)
     if(reset)
         fs_TLB_refil <= 1'h0;
-    else if(to_fs_valid && fs_allowin || flus)
-        fs
+    else if(to_fs_valid && fs_allowin || flush)
+        fs_TLB_refil <= TLB_refil_inst && !inst_unmapped;
+always @(posedge clk)
+    if(reset)
+        fs_TLB_inval <= 1'h0;
+    else if(to_fs_valid && fs_allowin || flush)
+        fs_TLB_inval <= TLB_inval_inst && !inst_unmapped;
 
 
 // IF stage
@@ -204,7 +209,7 @@ end
 
 //exc
 assign fs_exc      = |fs_exc_type;
-assign fs_exc_type = {1'b0, fs_adel, 6'h00};
+assign fs_exc_type = {fs_TLB_refil, fs_TLB_inval, 6'h0, fs_adel, 6'h0};
 
 assign fs_adel     = !(fs_pc[1:0] == 2'b00);
 

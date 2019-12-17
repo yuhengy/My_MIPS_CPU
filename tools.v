@@ -450,13 +450,17 @@ module TLB_exc_judge(
     input  D,
     input  store,
 
-    output Refill_Invalid_r,
-    output Refill_Invalid_s,
+    output Refill_r,
+    output Invalid_r,
+    output Refill_s
+    output Invalid_s,
     output Modified
 );
-assign Refill_Invalid_r = !store && (!found || !V);
-assign Refill_Invalid_s =  store && (!found || !V);
-assign Modified       = found && V && !D && store;
+assign Refill_r  = !store && !found;
+assign Invalid_r = !store &&  found && !V;
+assign Refill_s  =  store && !found;
+assign Invalid_s =  store &&  found && !V;
+assign Modified  =  found && V && !D && store;
 endmodule
 
 
