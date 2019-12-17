@@ -56,7 +56,7 @@ wire        ws_inst_tlbp   ;
 wire [31:0] ws_badvaddr    ;
 wire        ws_bd          ;
 wire        ws_exc         ;
-wire [ 7:0] ws_exc_type    ;
+wire [14:0] ws_exc_type    ;
 wire        ws_eret_flush  ;
 wire        ws_cp0_wen     ;
 wire        ws_res_from_cp0;
@@ -66,15 +66,15 @@ wire [ 4:0] ws_dest        ;
 wire [31:0] ws_mem_alu_result;
 wire [31:0] ws_final_result;
 wire [31:0] ws_pc          ;
-assign {ws_tlbp_index  ,  //161:130
-        ws_entryhi_wen ,  //129:129
-        ws_inst_tlbr   ,  //128:128
-        ws_inst_tlbwi  ,  //127:127
-        ws_inst_tlbp   ,  //126:126
-        ws_badvaddr    ,  //125:94
-        ws_bd          ,  // 93:93
-        ws_exc         ,  // 92:92
-        ws_exc_type    ,  // 91:84
+assign {ws_tlbp_index  ,  //168:137
+        ws_entryhi_wen ,  //136:136
+        ws_inst_tlbr   ,  //135:135
+        ws_inst_tlbwi  ,  //134:134
+        ws_inst_tlbp   ,  //133:133
+        ws_badvaddr    ,  //132:101
+        ws_bd          ,  //100:100
+        ws_exc         ,  // 99:99
+        ws_exc_type    ,  // 98:84
         ws_eret_flush  ,  // 83:83
         ws_cp0_wen     ,  // 82:82
         ws_res_from_cp0,  // 81:81
@@ -137,7 +137,7 @@ CP0_reg u_CP0_reg(
 
     .cp0_rdata   (ws_cp0_rdata               ),
 
-    .exc_type    ({8{ws_valid}} & ws_exc_type),
+    .exc_type    ({15{ws_valid}} & ws_exc_type),
     .PC          (ws_pc                      ),
     .is_slot     (ws_bd                      ),
     .int_num     (ext_int_in                 ),

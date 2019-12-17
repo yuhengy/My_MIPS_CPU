@@ -36,10 +36,10 @@ wire        ms_inst_tlbp   ;
 wire [31:0] ms_cp0_index_wdata;
 wire        ms_store_op    ;
 wire        old_es_exc     ;
-wire [ 7:0] old_es_exc_type;
+wire [14:0] old_es_exc_type;
 wire        ms_bd          ;
 wire        ms_exc         ;
-wire [ 7:0] ms_exc_type    ;
+wire [14:0] ms_exc_type    ;
 wire        ms_eret_flush  ;
 wire        ms_cp0_wen     ;
 wire        ms_res_from_cp0;
@@ -53,14 +53,14 @@ wire [ 3:0] ms_gr_we       ;
 wire [ 4:0] ms_dest        ;
 wire [31:0] ms_alu_result  ;
 wire [31:0] ms_pc          ;
-assign {ms_inst_tlbr   ,  //139:139
-        ms_inst_tlbwi  ,  //138:138
-        ms_inst_tlbp   ,  //137:137
-        ms_cp0_index_wdata,//136:105
-        ms_store_op    ,  //104:104
-        ms_bd          ,  //103:103
-        old_es_exc     ,  //102:102
-        old_es_exc_type,  //101:94
+assign {ms_inst_tlbr   ,  //146:146
+        ms_inst_tlbwi  ,  //145:145
+        ms_inst_tlbp   ,  //144:144
+        ms_cp0_index_wdata,//143:112
+        ms_store_op    ,  //111:111
+        ms_bd          ,  //110:110
+        old_es_exc     ,  //109:109
+        old_es_exc_type,  //108:94
         ms_eret_flush  ,  //93:93
         ms_cp0_wen     ,  //92:92
         ms_res_from_cp0,  //91:91
@@ -80,15 +80,15 @@ wire [31:0] ms_mem_alu_result;
 wire        ms_entryhi_wen;
 wire [31:0] ms_tlbp_index;
 
-assign ms_to_ws_bus = {ms_tlbp_index  ,  //161:130
-                       ms_entryhi_wen ,  //129:129
-                       ms_inst_tlbr   ,  //128:128
-                       ms_inst_tlbwi  ,  //127:127
-                       ms_inst_tlbp   ,  //126:126
-                       ms_badvaddr    ,  //125:94
-                       ms_bd          ,  // 93:93
-                       ms_exc         ,  // 92:92
-                       ms_exc_type    ,  // 91:84
+assign ms_to_ws_bus = {ms_tlbp_index  ,  //168:137
+                       ms_entryhi_wen ,  //136:136
+                       ms_inst_tlbr   ,  //135:135
+                       ms_inst_tlbwi  ,  //134:134
+                       ms_inst_tlbp   ,  //133:133
+                       ms_badvaddr    ,  //132:101
+                       ms_bd          ,  //100:100
+                       ms_exc         ,  // 99:99
+                       ms_exc_type    ,  // 98:84
                        ms_eret_flush  ,  // 83:83
                        ms_cp0_wen     ,  // 82:82
                        ms_res_from_cp0,  // 81:81
@@ -156,8 +156,8 @@ assign ms_entryhi_wen = ms_inst_tlbr ||
 
 // exceptions
 assign ms_exc      = old_es_exc || ms_adel;
-assign ms_exc_type = old_es_exc_type | {2'h0, ms_adel, 5'h00};
-assign ms_badvaddr = old_es_exc_type[6] ? ms_pc :           // Address Error on Ins
+assign ms_exc_type = old_es_exc_type | {9'h0, ms_adel, 5'h00};
+assign ms_badvaddr = (old_es_exc_type[14] || old_es_exc_type[13] || old_es_exc_type[6]) ? ms_pc :   // TLB / Address Error on Ins
                      /* Data */           ms_alu_result;
 
 endmodule
