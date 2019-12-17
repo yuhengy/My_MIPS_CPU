@@ -95,15 +95,18 @@ assign TLB_exc = TLB_refil_in || TLB_inval_in || TLB_refil_dr || TLB_inval_dr ||
 assign any_exc = |exc_type;
 assign exccode = int   ? 5'h00 :
                  rine  ? 5'h04 :
-                 TLB_in? 5'h02 :
+                 TLB_refil_in ? 5'h02 :
+				 TLB_inval_in ? 5'h02 :
                  ri    ? 5'h0a :
                  sys   ? 5'h08 :
                  bp    ? 5'h09 :
                  ov    ? 5'h0c :
                  rdae  ? 5'h04 :
                  ades  ? 5'h05 :
-                 TLB_dr? 5'h02 :
-                 TLB_ds? 5'h03 :
+                 TLB_refil_dr ? 5'h02 :
+				 TLB_inval_dr ? 5'h02 :
+                 TLB_refil_ds ? 5'h03 :
+				 TLB_inval_ds ? 5'h03 :
                 /*Mod*/  5'h01 ;
 
 assign int_happen = !cp0_status_exl && cp0_status_ie
