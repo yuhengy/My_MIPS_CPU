@@ -60,9 +60,9 @@ wire        es_ov_check   ; // Need to check ALU Overflow
 wire        es_bd         ;
 wire        es_ms_ws_exc_eret;
 wire        old_ds_exc    ;
-wire [ 7:0] old_ds_exc_type;
+wire [14:0] old_ds_exc_type;
 wire        es_exc        ;
-wire [ 7:0] es_exc_type   ;
+wire [14:0] es_exc_type   ;
 wire        es_eret_flush ;
 wire        es_cp0_wen    ;
 wire        es_res_from_cp0;
@@ -93,13 +93,13 @@ wire [15:0] es_imm        ;
 wire [31:0] es_rs_value   ;
 wire [31:0] es_rt_value   ;
 wire [31:0] es_pc         ;
-assign {es_inst_tlbr   ,  //187:187
-        es_inst_tlbwi  ,  //186:186
-        es_inst_tlbp   ,  //185:185
-        es_ov_check    ,  //184:184
-        es_bd          ,  //183:183
-        old_ds_exc     ,  //182:182
-        old_ds_exc_type,  //181:174
+assign {es_inst_tlbr   ,  //194:194
+        es_inst_tlbwi  ,  //193:193
+        es_inst_tlbp   ,  //192:192
+        es_ov_check    ,  //191:191
+        es_bd          ,  //190:190
+        old_ds_exc     ,  //189:189
+        old_ds_exc_type,  //188:174
         es_eret_flush  ,  //173:173
         es_cp0_wen     ,  //172:172
         es_res_from_cp0,  //171:171
@@ -168,14 +168,14 @@ assign es_cp0_index_wdata = {
 };
 assign es_cp0_real_addr = es_cp0_addr;
 
-assign es_to_ms_bus = {es_inst_tlbr   ,  //139:139
-                       es_inst_tlbwi  ,  //138:138
-                       es_inst_tlbp   ,  //137:137
-                       es_cp0_index_wdata,//136:105
-                       es_store_op    ,  //104:104
-                       es_bd          ,  //103:103
-                       es_exc         ,  //102:102
-                       es_exc_type    ,  //94:101
+assign es_to_ms_bus = {es_inst_tlbr   ,  //146:146
+                       es_inst_tlbwi  ,  //145:145
+                       es_inst_tlbp   ,  //144:144
+                       es_cp0_index_wdata,//143:112
+                       es_store_op    ,  //111:111
+                       es_bd          ,  //110:110
+                       es_exc         ,  //109:109
+                       es_exc_type    ,  //108:94
                        es_eret_flush  ,  //93:93
                        es_cp0_wen     ,  //92:92
                        es_res_from_cp0,  //91:91
@@ -325,7 +325,10 @@ st_select u_st_select(
 assign es_ov    = es_ov_check && es_alu_ov;
 
 assign es_ms_ws_exc_eret = es_exc || es_eret_flush || (|es_exc_eret_bus);
-assign es_exc            = old_ds_exc || es_ades || es_ov;
-assign es_exc_type       = old_ds_exc_type | {3'h0, es_ades, 3'h0, es_ov};
+assign es_exc            = old_ds_exc || es_ades || es_ov ||
+    es_tlblda_refill || es_tlblda_invalid || es_tlbs_refill || es_tlbs_invalid || es_mod;
+assign es_exc_type       = old_ds_exc_type | {
+    2'h0, es_tlblda_refill, es_tlblda_invalid, es_tlbs_refill, es_tlbs_invalid, es_mod,
+    3'h0, es_ades, 3'h0, es_ov};
 
 endmodule
