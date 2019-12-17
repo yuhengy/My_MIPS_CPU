@@ -108,7 +108,7 @@ wire        TLB_refil_ds  ;
 wire        TLB_inval_ds  ;
 wire        TLB_exec_Mod  ;
 
-assign flush = ws_send_flush || tlb_flush_r;
+assign flush = ws_send_flush || tlb_flush_r || ws_tlb_flush;
 
 always @(posedge clk) begin
     if (reset) begin
@@ -119,14 +119,16 @@ always @(posedge clk) begin
     end
 end
 always @(posedge clk) begin
-    tlb_flush_npc <= tlb_flush_pc + 32'h4;
+    if(ws_tlb_flush)
+        tlb_flush_npc <= tlb_flush_pc + 32'h4;
 end
 
 // IF stage
 if_stage if_stage(
     .clk            (clk            ),
     .reset          (reset          ),
-    .flush          (flush          ),
+    .flush          (ws_send_flush || tlb_flush_r),
+    .nextpc_is_tlb  (tlb_flush_r    ),
     .tlb_flush_npc  (tlb_flush_npc  ),
     //allowin
     .ds_allowin     (ds_allowin     ),

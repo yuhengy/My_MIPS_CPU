@@ -4,6 +4,7 @@ module if_stage(
     input                          clk            ,
     input                          reset          ,
     input                          flush          ,
+    input                          nextpc_is_tlb  ,
     input  [                 31:0] tlb_flush_npc  ,
     //allwoin
     input                          ds_allowin     ,
@@ -77,7 +78,8 @@ assign {nextpc_is_TLBrefill, nextpc_is_exc, nextpc_is_epc, epc} = exc_eret_bus;
 // pre-IF stage
 assign to_fs_valid  = ~reset;
 assign seq_pc       = fs_pc + 3'h4;
-assign nextpc       = nextpc_is_TLBrefill? 32'hbfc00200:
+assign nextpc       = nextpc_is_tlb? tlb_flush_npc:
+                      nextpc_is_TLBrefill? 32'hbfc00200:
                       nextpc_is_exc? 32'hbfc00380:
                       nextpc_is_epc? epc         :
                       br_taken     ? br_target   : 
