@@ -229,7 +229,7 @@ TLB_exc_judge TLB_exc_judge_s0(
     .store(1'h0    ),
 
     .Refill_r(s0_Refill_r),
-    .Invalid_r(s0_Invalid_r),
+    .Invalid_r(s0_Invalid_r)
     //.Refill_Invalid_s(),
     //.Modified()
 );

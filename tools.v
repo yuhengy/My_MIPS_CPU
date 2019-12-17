@@ -452,7 +452,7 @@ module TLB_exc_judge(
 
     output Refill_r,
     output Invalid_r,
-    output Refill_s
+    output Refill_s,
     output Invalid_s,
     output Modified
 );
