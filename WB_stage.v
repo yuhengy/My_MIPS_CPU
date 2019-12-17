@@ -23,7 +23,7 @@ module wb_stage #
     output                          send_flush    ,
     output                          send_tlb_flush,
     //wb exc eret
-    output [                  1:0]  ws_exc_eret_bus,
+    output [                  2:0]  ws_exc_eret_bus,
     //exc_eret_epc bus
     output [`EXC_ERET_BUS_WD -1:0]  exc_eret_bus  ,
 
@@ -48,6 +48,7 @@ wire        ws_ready_go;
 
 reg [`MS_TO_WS_BUS_WD -1:0] ms_to_ws_bus_r;
 
+wire        ws_tlb_flush   ;
 wire [31:0] ws_tlbp_index  ;
 wire        ws_entryhi_wen ;
 wire        ws_inst_tlbr   ;
@@ -66,7 +67,8 @@ wire [ 4:0] ws_dest        ;
 wire [31:0] ws_mem_alu_result;
 wire [31:0] ws_final_result;
 wire [31:0] ws_pc          ;
-assign {ws_tlbp_index  ,  //168:137
+assign {ws_tlb_flush   ,  //169:169
+        ws_tlbp_index  ,  //168:137
         ws_entryhi_wen ,  //136:136
         ws_inst_tlbr   ,  //135:135
         ws_inst_tlbwi  ,  //134:134
@@ -101,8 +103,8 @@ assign stall_ws_bus = {ws_valid && (|ws_gr_we), {4{ws_valid}} & ws_gr_we,
 assign forward_ws_bus = {ws_valid,
                          ws_final_result};
 
-assign ws_exc_eret_bus = {ws_exc && ws_valid, ws_eret_flush && ws_valid};
-assign exc_eret_bus    = {ws_exc_type[] && ws_valid, ws_exc && ws_valid, ws_eret_flush && ws_valid, ws_cp0_epc};
+assign ws_exc_eret_bus = {ws_tlb_flush && ws_valid, ws_exc && ws_valid, ws_eret_flush && ws_valid};
+assign exc_eret_bus    = {(ws_exc_type[14] || ws_exc_type[12] || ws_exc_type[10]) && ws_valid, ws_exc && ws_valid, ws_eret_flush && ws_valid, ws_cp0_epc};
 
 assign ws_entryhi_hazard = ws_valid && ws_entryhi_wen;
 

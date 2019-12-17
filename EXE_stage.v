@@ -21,7 +21,7 @@ module exe_stage #
     output [`STALL_BUS_WD    -1:0] stall_es_bus  ,
     output [`FORWARD_BUS_WD  -1:0] forward_es_bus,
     //ms, ws exc
-    input  [                  3:0] es_exc_eret_bus,
+    input  [                  5:0] es_exc_eret_bus,
     // TLB Probe
     output                      tlbp_valid,
     input                       tlbp_found,
@@ -168,7 +168,8 @@ assign es_cp0_index_wdata = {
 };
 assign es_cp0_real_addr = es_cp0_addr;
 
-assign es_to_ms_bus = {es_inst_tlbr   ,  //146:146
+assign es_to_ms_bus = {es_tlb_flush   ,  //147:147
+                       es_inst_tlbr   ,  //146:146
                        es_inst_tlbwi  ,  //145:145
                        es_inst_tlbp   ,  //144:144
                        es_cp0_index_wdata,//143:112
@@ -279,6 +280,7 @@ wire    es_tlbs_refill;     // TLB Refill: Store
 wire    es_tlblda_invalid;  // TLB Invalid: Load data
 wire    es_tlbs_invalid;    // TLB Invalid: Store
 wire    es_mod;             // TLB Modified
+wire    es_tlb_flush;
 
 assign  data_vpn2_odd = es_alu_result[31:12];
 assign  exe_store = es_store_op;
@@ -290,6 +292,9 @@ assign es_tlblda_invalid    = es_load_op && TLB_inval_dr;
 assign es_tlbs_refill       = es_store_op && TLB_refil_ds;
 assign es_tlbs_invalid      = es_store_op && TLB_inval_ds;
 assign es_mod               = es_store_op && TLB_exec_Mod;
+assign es_tlb_flush         = es_inst_tlbr  ||
+                              es_inst_tlbwi ||
+                              es_cp0_wen && (es_cp0_addr == {`ENTRYHI_NUM, 3'b0});
 
 assign data_sram_req   = (es_to_ms_valid && ms_allowin) && (
                         (es_load_op && !(TLB_inval_dr || TLB_refil_dr))
@@ -324,7 +329,7 @@ st_select u_st_select(
 //exc
 assign es_ov    = es_ov_check && es_alu_ov;
 
-assign es_ms_ws_exc_eret = es_exc || es_eret_flush || (|es_exc_eret_bus);
+assign es_ms_ws_exc_eret = es_exc || es_eret_flush || es_tlb_flush || (|es_exc_eret_bus);
 assign es_exc            = old_ds_exc || es_ades || es_ov ||
     es_tlblda_refill || es_tlblda_invalid || es_tlbs_refill || es_tlbs_invalid || es_mod;
 assign es_exc_type       = old_ds_exc_type | {

@@ -17,7 +17,7 @@ module mem_stage(
     output [`STALL_BUS_WD    -1:0] stall_ms_bus  ,
     output [`FORWARD_BUS_WD  -1:0] forward_ms_bus,
     //ms to es exc/eret bus
-    output [                  1:0] ms_exc_eret_bus,
+    output [                  2:0] ms_exc_eret_bus,
     //TLBP stall
     output                         ms_entryhi_hazard,
     //from data-sram
@@ -30,6 +30,7 @@ wire        ms_ready_go;
 
 reg [`ES_TO_MS_BUS_WD -1:0] es_to_ms_bus_r;
 
+wire        ms_tlb_flush   ;
 wire        ms_inst_tlbr   ;
 wire        ms_inst_tlbwi  ;
 wire        ms_inst_tlbp   ;
@@ -53,7 +54,8 @@ wire [ 3:0] ms_gr_we       ;
 wire [ 4:0] ms_dest        ;
 wire [31:0] ms_alu_result  ;
 wire [31:0] ms_pc          ;
-assign {ms_inst_tlbr   ,  //146:146
+assign {ms_tlb_flush   ,  //147:147
+        ms_inst_tlbr   ,  //146:146
         ms_inst_tlbwi  ,  //145:145
         ms_inst_tlbp   ,  //144:144
         ms_cp0_index_wdata,//143:112
@@ -80,7 +82,8 @@ wire [31:0] ms_mem_alu_result;
 wire        ms_entryhi_wen;
 wire [31:0] ms_tlbp_index;
 
-assign ms_to_ws_bus = {ms_tlbp_index  ,  //168:137
+assign ms_to_ws_bus = {ms_tlb_flush   ,  //169:169
+                       ms_tlbp_index  ,  //168:137
                        ms_entryhi_wen ,  //136:136
                        ms_inst_tlbr   ,  //135:135
                        ms_inst_tlbwi  ,  //134:134
@@ -104,7 +107,7 @@ assign stall_ms_bus = {ms_valid && ms_gr_we_1, {4{ms_valid}} & ms_gr_we,
 assign forward_ms_bus = {ms_to_ws_valid && !ms_res_from_cp0,
                          ms_mem_alu_result};
 
-assign ms_exc_eret_bus = {2{ms_valid}} & {ms_exc, ms_eret_flush};
+assign ms_exc_eret_bus = {3{ms_valid}} & {ms_tlb_flush, ms_exc, ms_eret_flush};
 
 assign ms_tlbp_index = ms_cp0_index_wdata;
 
