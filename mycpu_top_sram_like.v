@@ -307,7 +307,8 @@ tlb u_tlb(
     .s0_c       (tlb_s0_c       ),
     .s0_d       (tlb_s0_d       ),
     .s0_v       (tlb_s0_v       ),
-    .s0_Refill_Invalid_r(TLB_exec_inst),
+    .s0_Refill_r(TLB_refil_inst ), 
+    .s0_Invalid_r(TLB_inval_inst),
 
     // search port 1
     .s1_vpn2    (tlb_s1_vpn2    ),
@@ -320,8 +321,10 @@ tlb u_tlb(
     .s1_d       (tlb_s1_d       ),
     .s1_v       (tlb_s1_v       ),
     .store      (exe_store      ),
-    .s1_Refill_Invalid_r(TLB_exec_dr),
-    .s1_Refill_Invalid_s(TLB_exec_ds),
+    .s1_Refill_r(TLB_refil_dr   ),
+    .s1_Invalid_r(TLB_inval_dr  ),
+    .s1_Refill_s(TLB_refil_ds   ),
+    .s1_Invalid_s(TLB_inval_ds  ),
     .s1_Modified(TLB_exec_Mod   ),
 
     // write port
