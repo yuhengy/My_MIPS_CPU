@@ -32,8 +32,10 @@ module exe_stage #
     output [                 19:0] data_vpn2_odd  ,
     output                         exe_store      ,
     input  [                 19:0] data_pfn       ,
-    input                          TLB_exec_dr    ,
-    input                          TLB_exec_ds    ,
+    input                          TLB_refil_dr   ,
+    input                          TLB_inval_dr   ,
+    input                          TLB_refil_ds   ,
+    input                          TLB_inval_ds   ,
     input                          TLB_exec_Mod   ,
 
     // data sram interface
@@ -283,9 +285,16 @@ assign  exe_store = es_store_op;
 
 assign  unmapped = (es_alu_result[31:30] == 2'b10);
 
+assign es_tlblda_refill     = es_load_op && TLB_refil_dr;
+assign es_tlblda_invalid    = es_load_op && TLB_inval_dr;
+assign es_tlbs_refill       = es_store_op && TLB_refil_ds;
+assign es_tlbs_invalid      = es_store_op && TLB_inval_ds;
+assign es_mod               = es_store_op && TLB_exec_Mod;
 
-
-assign data_sram_req   = (es_to_ms_valid && ms_allowin) && (es_load_op || (|es_inst_store));
+assign data_sram_req   = (es_to_ms_valid && ms_allowin) && (
+                        (es_load_op && !(TLB_inval_dr || TLB_refil_dr))
+                        || (es_store_op && !(TLB_refil_ds || TLB_inval_ds || TLB_exec_Mod))
+                        );
 assign data_sram_wr    = es_store_op;
 assign data_sram_wen   = es_mem_we & {4{es_valid && !es_ms_ws_exc_eret}} ;
 assign data_sram_addr  = unmapped ? {3'b000, es_alu_result[28:0]} :
