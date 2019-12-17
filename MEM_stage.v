@@ -108,7 +108,11 @@ assign ms_exc_eret_bus = {2{ms_valid}} & {ms_exc, ms_eret_flush};
 
 assign ms_tlbp_index = ms_cp0_index_wdata;
 
-assign ms_ready_go    = !((ms_res_from_mem || ms_store_op) && !data_sram_data_ok);
+wire        old_es_tlb_exc;
+
+assign  old_es_tlb_exc = |(old_es_exc_type[12:8]);
+
+assign ms_ready_go    = !((ms_res_from_mem || ms_store_op) && !old_es_tlb_exc && !data_sram_data_ok);
 assign ms_allowin     = !ms_valid || ms_ready_go && ws_allowin;
 assign ms_to_ws_valid = ms_valid && ms_ready_go;
 always @(posedge clk) begin
