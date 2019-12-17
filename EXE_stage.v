@@ -287,18 +287,18 @@ assign  exe_store = es_store_op;
 
 assign  unmapped = (es_alu_result[31:30] == 2'b10);
 
-assign es_tlblda_refill     = es_load_op && TLB_refil_dr;
-assign es_tlblda_invalid    = es_load_op && TLB_inval_dr;
-assign es_tlbs_refill       = es_store_op && TLB_refil_ds;
-assign es_tlbs_invalid      = es_store_op && TLB_inval_ds;
-assign es_mod               = es_store_op && TLB_exec_Mod;
+assign es_tlblda_refill     = es_load_op && TLB_refil_dr && !unmapped;
+assign es_tlblda_invalid    = es_load_op && TLB_inval_dr && !unmapped;
+assign es_tlbs_refill       = es_store_op && TLB_refil_ds && !unmapped;
+assign es_tlbs_invalid      = es_store_op && TLB_inval_ds && !unmapped;
+assign es_mod               = es_store_op && TLB_exec_Mod && !unmapped;
 assign es_tlb_flush         = es_inst_tlbr  ||
                               es_inst_tlbwi ||
                               es_cp0_wen && (es_cp0_addr == {`ENTRYHI_NUM, 3'b0});
 
 assign data_sram_req   = (es_to_ms_valid && ms_allowin) && (
-                        (es_load_op && !(TLB_inval_dr || TLB_refil_dr))
-                        || (es_store_op && !(TLB_refil_ds || TLB_inval_ds || TLB_exec_Mod))
+                        (es_load_op && !(es_tlblda_refill || es_tlblda_invalid))
+                        || (es_store_op && !(es_tlbs_refill || es_tlbs_invalid || es_mod))
                         );
 assign data_sram_wr    = es_store_op;
 assign data_sram_wen   = es_mem_we & {4{es_valid && !es_ms_ws_exc_eret}} ;
