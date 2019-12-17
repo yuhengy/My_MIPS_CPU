@@ -22,6 +22,7 @@ module wb_stage #
     output [`FORWARD_BUS_WD  -1:0]  forward_ws_bus,
     output                          send_flush    ,
     output                          send_tlb_flush,
+    output [                 31:0]  tlb_flush_pc  ,
     //wb exc eret
     output [                  2:0]  ws_exc_eret_bus,
     //exc_eret_epc bus
@@ -158,7 +159,8 @@ CP0_reg u_CP0_reg(
     .tlbwi_entry (ws_tlbwi_entry)
 );
 assign send_flush = ws_valid && (ws_eret_flush || ws_exc);
-assign send_tlb_flush = 1'h0;  //TODO Lab14
+assign send_tlb_flush = ws_valid && ws_tlb_flush;
+assign tlb_flush_pc = ws_pc;
 assign ws_final_result = ws_res_from_cp0? ws_cp0_rdata:
                                           ws_mem_alu_result;
 

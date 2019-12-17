@@ -4,6 +4,7 @@ module if_stage(
     input                          clk            ,
     input                          reset          ,
     input                          flush          ,
+    input  [                 31:0] tlb_flush_npc  ,
     //allwoin
     input                          ds_allowin     ,
     //brbus

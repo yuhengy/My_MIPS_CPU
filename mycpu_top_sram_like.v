@@ -94,6 +94,8 @@ wire tlbp_valid;
 wire ws_send_flush;
 reg  tlb_flush_r;
 wire ws_tlb_flush;
+reg  tlb_flush_npc;
+wire tlb_flush_pc;
 
 wire [19:0] inst_vpn2_odd ;
 wire        TLB_refil_inst;
@@ -116,12 +118,16 @@ always @(posedge clk) begin
         tlb_flush_r <= ws_tlb_flush;
     end
 end
+always @(posedge clk) begin
+    tlb_flush_npc <= tlb_flush_pc + 32'h4;
+end
 
 // IF stage
 if_stage if_stage(
     .clk            (clk            ),
     .reset          (reset          ),
     .flush          (flush          ),
+    .tlb_flush_npc  (tlb_flush_npc  ),
     //allowin
     .ds_allowin     (ds_allowin     ),
     //brbus
@@ -266,6 +272,7 @@ wb_stage wb_stage(
     .forward_ws_bus (forward_ws_bus ),
     .send_flush     (ws_send_flush  ),
     .send_tlb_flush (ws_tlb_flush   ),
+    .tlb_flush_pc   (tlb_flush_pc   ),
     //exc eret
     .ws_exc_eret_bus(ws_to_es_exc_eret_bus),
     .exc_eret_bus   (exc_eret_bus   ),
