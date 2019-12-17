@@ -51,7 +51,7 @@ wire [ 31:0] br_target;
 assign {br_bd, br_taken,br_target} = br_bus;
 
 wire        fs_exc;
-wire [ 7:0] fs_exc_type;
+wire [14:0] fs_exc_type;
 wire [31:0] fs_inst;
 reg  [31:0] fs_pc;
 assign fs_to_ds_bus = {fs_bd   ,
