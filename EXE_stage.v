@@ -270,10 +270,26 @@ always @(posedge clk) begin
         lo <= lo_wdata;
 end
 
+wire    unmapped;
+
+wire    es_tlblda_refill;   // TLB Refill: Load data
+wire    es_tlbs_refill;     // TLB Refill: Store
+wire    es_tlblda_invalid;  // TLB Invalid: Load data
+wire    es_tlbs_invalid;    // TLB Invalid: Store
+wire    es_mod;             // TLB Modified
+
+assign  data_vpn2_odd = es_alu_result[31:12];
+assign  exe_store = es_store_op;
+
+assign  unmapped = (es_alu_result[31:30] == 2'b10);
+
+
+
 assign data_sram_req   = (es_to_ms_valid && ms_allowin) && (es_load_op || (|es_inst_store));
-assign data_sram_wr    = |es_inst_store;
+assign data_sram_wr    = es_store_op;
 assign data_sram_wen   = es_mem_we & {4{es_valid && !es_ms_ws_exc_eret}} ;
-assign data_sram_addr  = es_alu_result;
+assign data_sram_addr  = unmapped ? {3'b000, es_alu_result[28:0]} :
+                            {data_pfn, es_alu_result[11:0]};
 
 assign es_store_op = |es_inst_store;
 
