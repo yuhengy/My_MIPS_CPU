@@ -5,8 +5,8 @@
     `define EXC_ERET_BUS_WD 34
     `define STALL_BUS_WD    10
     `define FORWARD_BUS_WD  33
-    `define FS_TO_DS_BUS_WD 74
-    `define DS_TO_ES_BUS_WD 188
+    `define FS_TO_DS_BUS_WD 81
+    `define DS_TO_ES_BUS_WD 195
     `define ES_TO_MS_BUS_WD 140
     `define MS_TO_WS_BUS_WD 162
     `define WS_TO_RF_BUS_WD 42

@@ -34,10 +34,10 @@ wire        ds_bd  ;    // branch delay slot
 wire [31:0] ds_inst;
 wire [31:0] ds_pc  ;
 wire        old_fs_exc;
-wire [ 7:0] old_fs_exc_type;
-assign {ds_bd           ,  // 73:73
-        old_fs_exc      ,  // 72:72
-        old_fs_exc_type ,  // 71:64
+wire [14:0] old_fs_exc_type;
+assign {ds_bd           ,  // 80:80
+        old_fs_exc      ,  // 79:79
+        old_fs_exc_type ,  // 78:64
         ds_inst         ,  // 63:32
         ds_pc              // 31:0
        } = fs_to_ds_bus_r;
@@ -101,7 +101,7 @@ wire        br_happen;  // br_taken component for Branch (excluding Jump)
 wire [ 5:0] br_op;
 
 wire        ds_exc;
-wire [ 7:0] ds_exc_type;
+wire [14:0] ds_exc_type;
 wire        ov_check;
 wire        eret_flush;
 wire        cp0_wen;
@@ -232,13 +232,13 @@ assign br_bus       = {br_bd    ,   //33:33
                        br_target    //31: 0 
                       };
 
-assign ds_to_es_bus = {inst_tlbr   ,  //187:187
-                       inst_tlbwi  ,  //186:186
-                       inst_tlbp   ,  //185:185
-                       ov_check    ,  //184:184
-                       ds_bd       ,  //183:183
-                       ds_exc      ,  //182:182
-                       ds_exc_type ,  //181:174
+assign ds_to_es_bus = {inst_tlbr   ,  //194:194
+                       inst_tlbwi  ,  //193:193
+                       inst_tlbp   ,  //192:192
+                       ov_check    ,  //191:191
+                       ds_bd       ,  //190:190
+                       ds_exc      ,  //189:189
+                       ds_exc_type ,  //188:174
                        eret_flush  ,  //173:173
                        cp0_wen     ,  //172:172
                        res_from_cp0,  //171:171
@@ -449,7 +449,7 @@ assign res_from_cp0 = inst_mfc0;
 assign cp0_wen      = inst_mtc0;
 assign eret_flush   = inst_eret;
 assign ds_exc       = old_fs_exc | inst_syscall | inst_break | inst_others | int_happen;
-assign ds_exc_type  = {int_happen, old_fs_exc_type[6:4], inst_syscall, inst_break, inst_others, old_fs_exc_type[0]};
+assign ds_exc_type  = {old_fs_exc_type[14:8], int_happen, old_fs_exc_type[6:4], inst_syscall, inst_break, inst_others, old_fs_exc_type[0]};
 assign ov_check     = inst_add | inst_addi | inst_sub;
 
 assign dest         = dst_is_r31 ? 5'd31 :
