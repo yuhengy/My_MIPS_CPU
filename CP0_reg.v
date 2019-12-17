@@ -36,7 +36,9 @@ module CP0_reg #
 
     //tlbwi
     //output Index use tlb_index
-    output [77:0] tlbwi_entry
+    output [77:0] tlbwi_entry,
+
+	output 		  TLB_refill
 );
 
 wire [31:0] cp0_addr_d;
@@ -108,6 +110,10 @@ assign exccode = int   ? 5'h00 :
                  TLB_refil_ds ? 5'h03 :
 				 TLB_inval_ds ? 5'h03 :
                 /*Mod*/  5'h01 ;
+assign TLB_refill = (int || rine) ? 0 :
+					(TLB_refil_in) ? 1 :
+					(TLB_inval_in || ri || sys || bp || ov || rdae || ades) ? 0 :
+					(TLB_refil_dr || TLB_refil_ds) ? 1 : 0;
 
 assign int_happen = !cp0_status_exl && cp0_status_ie
                  && (|(cp0_status_im & cp0_cause_ip));

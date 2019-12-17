@@ -99,13 +99,15 @@ assign ws_to_rf_bus = {rf_we   ,  //40:37
 wire [31:0] ws_cp0_rdata;
 wire [31:0] ws_cp0_epc;
 
+wire    TLB_refill;
+
 assign stall_ws_bus = {ws_valid && (|ws_gr_we), {4{ws_valid}} & ws_gr_we,
                        ws_dest};
 assign forward_ws_bus = {ws_valid,
                          ws_final_result};
 
 assign ws_exc_eret_bus = {ws_tlb_flush && ws_valid, ws_exc && ws_valid, ws_eret_flush && ws_valid};
-assign exc_eret_bus    = {(ws_exc_type[14] || ws_exc_type[12] || ws_exc_type[10]) && ws_valid, ws_exc && ws_valid, ws_eret_flush && ws_valid, ws_cp0_epc};
+assign exc_eret_bus    = {TLB_refill && ws_valid, ws_exc && ws_valid, ws_eret_flush && ws_valid, ws_cp0_epc};
 
 assign ws_entryhi_hazard = ws_valid && ws_entryhi_wen;
 
@@ -156,7 +158,8 @@ CP0_reg u_CP0_reg(
     .tlb_index   (ws_tlb_index),
     .tlbr_wen    (ws_inst_tlbr && ws_valid),
     .tlbr_entry  (ws_tlbr_entry),
-    .tlbwi_entry (ws_tlbwi_entry)
+    .tlbwi_entry (ws_tlbwi_entry),
+    .TLB_refill  (TLB_refill)
 );
 assign send_flush = ws_valid && (ws_eret_flush || ws_exc);
 assign send_tlb_flush = ws_valid && ws_tlb_flush;
