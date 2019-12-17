@@ -122,6 +122,7 @@ always @(posedge clk)
     else if(pre_IF_TLB_exc)
         pre_IF_TLB_exc <= 1'h0;
 
+
 // IF stage
 assign fs_ready_go    = inst_sram_data_ok_after_ignore || buf_inst_valid;
 assign fs_allowin     = !fs_valid || fs_ready_go && ds_allowin;
@@ -148,7 +149,7 @@ end
 
 assign inst_sram_req   = (to_fs_valid && fs_allowin || flush) && !(TLB_exec_inst && !inst_unmapped);
 assign inst_sram_wen   = 4'h0;
-assign inst_sram_addr  = inst_unmapped ? true_npc : {inst_pfn, true_npc[11:0]};
+assign inst_sram_addr  = inst_unmapped ? {3'h0, true_npc[28:0]} : {inst_pfn, true_npc[11:0]};
 assign inst_sram_wdata = 32'b0;
 
 assign fs_inst         = buf_inst_valid ? buf_inst : inst_sram_rdata;

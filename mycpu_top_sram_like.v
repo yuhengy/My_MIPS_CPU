@@ -206,8 +206,10 @@ exe_stage exe_stage(
     .data_vpn2_odd  (data_vpn2_odd  ),
     .data_pfn       (tlb_s1_pfn     ),
     .exe_store      (exe_store      ),
-    .TLB_exec_dr    (TLB_exec_dr    ),
-    .TLB_exec_ds    (TLB_exec_ds    ),
+    .TLB_refil_dr   (TLB_refil_dr   ),
+    .TLB_inval_dr   (TLB_inval_dr   ),
+    .TLB_refil_ds   (TLB_refil_ds   ),
+    .TLB_inval_ds   (TLB_inval_ds   ),
     .TLB_exec_Mod   (TLB_exec_Mod   ),
     // data sram interface
     .data_sram_req  (data_sram_req  ),
