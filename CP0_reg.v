@@ -234,7 +234,7 @@ always @(posedge clk)
 	if(rst)
 		cp0_entryhi[12:8] <= 5'h0;
 	else if(TLB_exc)
-		cp0_entryhi[31:13] <= cp0_badvaddr[31:13];
+		cp0_entryhi[31:13] <= bad_vaddr[31:13];
 	else if(tlbr_wen)
 		cp0_entryhi <= {tlbr_entry[77:59], 5'h0, tlbr_entry[58:51]};
 	else if(cp0_wen && cp0_addr_d[`ENTRYHI_NUM] && cp0_addr[2:0]==3'h0) begin
