@@ -12,7 +12,7 @@ module CP0_reg #
     input         cp0_wen,
     input  [31:0] cp0_wdata,
 
-    input  [11:0] exc_type,
+    input  [14:0] exc_type,
     input  [31:0] PC,
     input         is_slot,
 
@@ -40,7 +40,7 @@ module CP0_reg #
 );
 
 wire [31:0] cp0_addr_d;
-wire        int, rine, rdae, ades, sys, bp, ri, ov, TLB_in, TLB_dr, TLB_ds, Mod;
+wire        int, rine, rdae, ades, sys, bp, ri, ov, TLB_refil_in, TLB_inval_in, TLB_refil_dr, TLB_inval_dr, TLB_refil_ds, TLB_inval_ds, Mod;
 wire        TLB_exc;
 wire        any_exc;
 wire [ 4:0] exccode;
@@ -90,8 +90,8 @@ assign cp0_rdata = {32{cp0_addr_d[`BADVADDR_NUM]}} & cp0_badvaddr
                  | {32{cp0_addr_d[`ENTRYLO0_NUM]}} & cp0_entrylo0;
 
 //exc int info
-assign {int, rine, rdae, ades, sys, bp, ri, ov, TLB_in, TLB_dr, TLB_ds, Mod} = exc_type;
-assign TLB_exc = TLB_in || TLB_dr || TLB_ds || Mod;
+assign {int, rine, rdae, ades, sys, bp, ri, ov, TLB_refil_in, TLB_inval_in, TLB_refil_dr, TLB_inval_dr, TLB_refil_ds, TLB_inval_ds, Mod} = exc_type;
+assign TLB_exc = TLB_refil_in || TLB_inval_in || TLB_refil_dr || TLB_inval_dr || TLB_refil_ds || TLB_inval_ds || Mod;
 assign any_exc = |exc_type;
 assign exccode = int   ? 5'h00 :
                  rine  ? 5'h04 :

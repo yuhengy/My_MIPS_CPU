@@ -17,7 +17,8 @@ module if_stage(
     //TLB V2P
     output [                 19:0] inst_vpn2_odd  ,
     input  [                 19:0] inst_pfn       ,
-    input                          TLB_exec_inst  ,
+    input                          TLB_refil_inst ,
+    input                          TLB_inval_inst ,
 
     // inst sram interface
     output        inst_sram_req  ,
@@ -104,23 +105,36 @@ always @(posedge clk)
     if(reset)
         ignore_next_inst_sram_data_ok <= 1'h0;
     //not havegot_notgetting_last_inst_sram_data_ok && not getting_inst_sram_data_ok
-    else if(flush && !buf_inst_valid && !(inst_sram_data_ok || pre_IF_TLB_exc))
+    else if(flush && !buf_inst_valid && !(inst_sram_data_ok || pre_IF_TLB_refil || pre_IF_TLB_inval))
         ignore_next_inst_sram_data_ok <= 1'h1;
-    else if(inst_sram_data_ok || pre_IF_TLB_exc)
+    else if(inst_sram_data_ok || pre_IF_TLB_refil || pre_IF_TLB_inval)
         ignore_next_inst_sram_data_ok <= 1'h0;
-assign inst_sram_data_ok_after_ignore = (inst_sram_data_ok || pre_IF_TLB_exc) && !ignore_next_inst_sram_data_ok;
+assign inst_sram_data_ok_after_ignore = (inst_sram_data_ok || pre_IF_TLB_refil || pre_IF_TLB_inval) && !ignore_next_inst_sram_data_ok;
 
 //TLB exception
 wire inst_unmapped;
-reg  pre_IF_TLB_exc;
+reg  pre_IF_TLB_refil, pre_IF_TLB_inval;
+reg  fs_TLB_refil    , fs_TLB_inval    ;
 assign inst_unmapped = true_npc[31:30]==4'b10;
 always @(posedge clk)
     if(reset)
-        pre_IF_TLB_exc <= 1'h0;
+        pre_IF_TLB_refil <= 1'h0;
     else if(to_fs_valid && fs_allowin || flush)
-        pre_IF_TLB_exc <= TLB_exec_inst && !inst_unmapped;
-    else if(pre_IF_TLB_exc)
-        pre_IF_TLB_exc <= 1'h0;
+        pre_IF_TLB_refil <= TLB_refil_inst && !inst_unmapped;
+    else if(pre_IF_TLB_refil)
+        pre_IF_TLB_refil <= 1'h0;
+always @(posedge clk)
+    if(reset)
+        pre_IF_TLB_inval <= 1'h0;
+    else if(to_fs_valid && fs_allowin || flush)
+        pre_IF_TLB_inval <= TLB_inval_inst && !inst_unmapped;
+    else if(pre_IF_TLB_inval)
+        pre_IF_TLB_inval <= 1'h0;
+always @(posedge clk)
+    if(reset)
+        fs_TLB_refil <= 1'h0;
+    else if(to_fs_valid && fs_allowin || flus)
+        fs
 
 
 // IF stage
@@ -147,7 +161,7 @@ always @(posedge clk) begin
 end
 
 
-assign inst_sram_req   = (to_fs_valid && fs_allowin || flush) && !(TLB_exec_inst && !inst_unmapped);
+assign inst_sram_req   = (to_fs_valid && fs_allowin || flush) && !((TLB_refil_inst||TLB_inval_inst) && !inst_unmapped);
 assign inst_sram_wen   = 4'h0;
 assign inst_sram_addr  = inst_unmapped ? {3'h0, true_npc[28:0]} : {inst_pfn, true_npc[11:0]};
 assign inst_sram_wdata = 32'b0;

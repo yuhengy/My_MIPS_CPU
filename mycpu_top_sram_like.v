@@ -351,7 +351,7 @@ assign tlb_s0_asid     = cp0_entryhi  [ 7: 0];
 // TLBP ?
 assign tlb_s1_vpn2     = tlbp_valid? cp0_entryhi  [31:13]:
                                      data_vpn2_odd[19: 1];
-assign tlb_s1_odd_page = tlbp_valid? cp0_entryhi  [   12]://cp0_entryhi[12]???
+assign tlb_s1_odd_page = tlbp_valid?                 1'h0:
                                      data_vpn2_odd[    0];
 assign tlb_s1_asid     = cp0_entryhi[ 7: 0];
 
