@@ -102,7 +102,7 @@ assign forward_ws_bus = {ws_valid,
                          ws_final_result};
 
 assign ws_exc_eret_bus = {ws_exc && ws_valid, ws_eret_flush && ws_valid};
-assign exc_eret_bus    = {ws_exc && ws_valid, ws_eret_flush && ws_valid, ws_cp0_epc};
+assign exc_eret_bus    = {ws_exc_type[] && ws_valid, ws_exc && ws_valid, ws_eret_flush && ws_valid, ws_cp0_epc};
 
 assign ws_entryhi_hazard = ws_valid && ws_entryhi_wen;
 
